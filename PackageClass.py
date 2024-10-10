@@ -24,7 +24,7 @@ class Package:
         return f"[Package {self.packageID}] | Destination: {self.address} {self.city}, {self.state} {self.zip} | Deadline: {self.deadline} | Weighs {self.weight} kilos | Special Notes: {self.notes}"
 
     def getID(self):
-        return self.packageID
+        return int(self.packageID)
     
     def getAddress(self):
         return self.address
