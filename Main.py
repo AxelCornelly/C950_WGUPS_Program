@@ -16,9 +16,10 @@ def readPackages(packageFile):
         next(csvFile) # Skips Header Row
         for line in csvFile:
             p = Package(line[0],line[1],line[2],line[3],line[4],line[5],line[6],line[7])
-            packageHash.addToHash(packageHash, p)
+            # print(p.toString())
+            packageHash.addPackage(p)
 
 
 if __name__ == "__main__":
-    readPackages('WGUPS Package File.csv')
-    print(packageHash)
+    readPackages("C950_WGUPS_Program/WGUPS Package File.csv")
+    packageHash.showContents()

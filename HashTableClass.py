@@ -1,39 +1,82 @@
+from PackageClass import Package
 class HashTable:
     def __init__(self, size=10):
-        self.size = size
+        """ Class constructor with an optional parameter for size of the hash table.
+        By default, creates a hash table of size 10, filling each bucket with an empty list.
+        Args:
+            size (int): [Optional] The size of the hash table, or number of "buckets".
+        """
         self.table = []
         for i in range(size):
             self.table.append([])
-            i += 1
     
-    def hash(self, packageID):
-        """This is a helper hash function to assist in the insertion
-        of items into our hash table.
+    def findBucket(self, key: int):
+        """ Helper function to perform hashing on an item's key and apply modulus to the
+        length of the table. Returns an integer that defines the bucket in the table.
         Args:
-            packageID (int): The package's ID.
+            key (int): The specified key (package ID).
+        Returns:
+            val (int): The index of the bucket in the hash table.
         """
-        return (int(packageID) % 10)
-
-    def searchPackageHash(self, hashTable, key):
-        index = hash(key)
-        bucket = hashTable.table[index]
-        for p in bucket:
-            if p[0] == key:
-                return p[1]
-            else: 
-                return None
+        val = key % len(self.table)
+        return val
+    
+    def addPackage(self, package: Package):
+        """ This function adds package objects into the hash table. Addresses collisions
+        by using chaining.
+        Args:
+            package (Package): Package to add to the hash table."""
         
-    def addToHash(self, hashTable, package):
-        """ This is a helper function to add package objects into our hash table
-        data structure. It takes in a list and a Package object. The
-        insertion of the package depends on the table key, which will be 
-        Package ID. Utilizes chaining to handle collisions.
+        # Search for bucket list to insert into
+        bucket = self.findBucket(package.getID())
+        bucketList = self.table[bucket]
+        
+        # Update value if already in bucket
+        for keyval in bucketList:
+            if keyval[0] == package.getID():
+                keyval[1] = package
+                return True
+        
+        # If package isn't in the bucket, append to the bucket list
+        key_val = [package.getID(), package]
+        bucketList.append(key_val)
+        return True
+    
+    def searchPackage(self, key: int):
+        """ This function searches the hash table for a package given a key. The search performed is linear
+        and has a worst-case run time of *O*(*n*), *n* being the number of elements in the hash table. Returns the package if a matching key is found, otherwise
+        returns None.
+        numbered list
         Args:
-            hashTable (list): The hash table list structure.
-            package (Package): The Package object to be inserted into the hash table.
+            key (int): The key of a package (Package ID)
         """
-        if(self.searchPackageHash(hashTable, package.getID()) is None):
-            key = hash(package.getID())
-            bucket = hashTable.table[key]
-            packageNode = [package.getID(), package]
-            bucket.append(packageNode)
+        # Locate bucket
+        bucket = self.findBucket(key)
+        bucketList = self.table[bucket]
+
+        # Look for the package within this bucket's list
+        for keyval in bucketList:
+            if keyval[0] == key:
+                return keyval[1] # The Package
+        return None # If not found
+    
+    def removePackage(self, key: int):
+        """ This function removes a package given a key (package ID).
+        Args:
+            key (int): The key to look for and remove a package from.
+        """
+        # Locate bucket
+        bucket = self.findBucket(key)
+        bucketList = self.table[bucket]
+        
+        # Remove package if exists
+        for keyval in bucketList:
+            if keyval[0] == key:
+                bucketList.remove([keyval[0],keyval[1]])
+
+    def showContents(self):
+        """ Help function to print out contents of the hash table in a more legible way."""
+        for i in range(len(self.table)):
+            for j in range(len(self.table[i])):
+                p = self.table[i][j][1]
+                print(f"Bucket {i}: {p.toString()}")
