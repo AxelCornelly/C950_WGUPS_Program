@@ -1,5 +1,5 @@
 class Package:
-    def __init__(self, packageID: str, address: str, city:str, state: str, zip:str, deadline: str, weight: str, notes: str):
+    def __init__(self, packageID: str, address: str, city:str, state: str, zip:str, deadline: str, weight: str, notes: str, status="Undelivered"):
         """Class constructor function that defines a Package object.
         Args:
             packageID (int): The ID of the package.
@@ -10,6 +10,7 @@ class Package:
             deadline (DateTime): The time of day that the package must be delivered by.
             weight (int): The weight of the package in kilos.
             notes (str): The additional notes that are attached to the package.
+            status (str): The status of the package. Defaults to 'Undelivered'.
         """
         self.packageID = packageID
         self.address = address
@@ -19,13 +20,14 @@ class Package:
         self.deadline = deadline
         self.weight = weight
         self.notes = notes
+        self.status = status
     
     def toString(self) -> str:
         """ Helper function to display package information in a legible format.
         Returns:
             str: String value in the format of [Package ID] | Address | Deadline | Weight | Special Notes
         """
-        return f"[Package {self.packageID}] | Destination: {self.address} {self.city}, {self.state} {self.zip} | Deadline: {self.deadline} | Weighs {self.weight} kilos | Special Notes: {self.notes}"
+        return f"[Package {self.packageID}] | Destination: {self.address} {self.city}, {self.state} {self.zip} | Deadline: {self.deadline} | Weighs {self.weight} kilos | Special Notes: {self.notes} | Status: {self.status}"
 
     def getID(self) -> int:
         """ Returns the package's ID in the form of an *int*."""
@@ -58,6 +60,17 @@ class Package:
     def getNotes(self) -> str:
         """ Returns any special notes attached to the package."""
         return self.notes
+
+    def getStatus(self) -> str:
+        """ Returns the delivery status of the package."""
+        return self.status
+    
+    def updateStatus(self, newStatus: str):
+        """ Updates the delivery status of the package.
+        Args:
+            newStatus (str): The new status of the package (Undelivered or Delivered).
+        """
+        self.status = newStatus
     
     def updateAddress(self, newAddress: str, newCity: str, newState: str, newZip: str):
         """ Updates the address of a package.
