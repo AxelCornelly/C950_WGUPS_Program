@@ -10,13 +10,13 @@ class HashTable:
         for i in range(size):
             self.table.append([])
     
-    def findBucket(self, key: int):
+    def findBucket(self, key: int) -> int:
         """ Helper function to perform hashing on an item's key and apply modulus to the
         length of the table. Returns an integer that defines the bucket in the table.
         Args:
             key (int): The specified key (package ID).
         Returns:
-            val (int): The index of the bucket in the hash table.
+            val (int): The modulus of the key and the length of the hash table.
         """
         val = key % len(self.table)
         return val
@@ -43,13 +43,15 @@ class HashTable:
         bucketList.append(key_val)
         return True
     
-    def searchPackage(self, key: int):
+    def searchPackage(self, key: int) -> Package | None:
         """ This function searches the hash table for a package given a key. The search performed is linear
         and has a worst-case run time of *O*(*n*), *n* being the number of elements in the hash table. Returns the package if a matching key is found, otherwise
         returns None.
         numbered list
         Args:
-            key (int): The key of a package (Package ID)
+            key (int): The key of a package (Package ID).
+        Returns:
+            Package: The package with the corresponding key, otherwise *None*.
         """
         # Locate bucket
         bucket = self.findBucket(key)
