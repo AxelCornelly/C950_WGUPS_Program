@@ -76,7 +76,7 @@ class HashTable:
                 bucketList.remove([keyval[0],keyval[1]])
 
     def showContents(self):
-        """ Help function to print out contents of the hash table in a more legible way."""
+        """ Helper function to print out contents of the hash table in a more legible way."""
         for i in range(len(self.table)):
             for j in range(len(self.table[i])):
                 p = self.table[i][j][1]
