@@ -28,17 +28,18 @@ class HashTable:
             package (Package): Package to add to the hash table."""
         
         # Search for bucket list to insert into
-        bucket = self.findBucket(package.getID())
+        key = package.getID()
+        bucket = self.findBucket(key)
         bucketList = self.table[bucket]
         
         # Update value if already in bucket
         for keyval in bucketList:
-            if keyval[0] == package.getID():
+            if keyval[0] == key:
                 keyval[1] = package
                 return True
         
         # If package isn't in the bucket, append to the bucket list
-        key_val = [package.getID(), package]
+        key_val = [key, package]
         bucketList.append(key_val)
         return True
     
