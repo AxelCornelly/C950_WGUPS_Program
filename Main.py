@@ -8,6 +8,7 @@ packageHash = HashTable()
 def readPackages(packageFile):
     """ This function reads in a csv file containing package data and appends them
     to the packageHash data structure.
+    
     Args:
         packageFile (str): String path to the package csv file.
     """
@@ -22,6 +23,7 @@ def readPackages(packageFile):
 # Read in distance data and add to distance 2D list
 def readDistances(distanceFile):
     """ Reads in a csv file of distances between delivery addresses.
+    
     Args:
         distanceFile (str): String path to the distance csv file.
     """
