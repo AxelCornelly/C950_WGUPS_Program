@@ -1,6 +1,7 @@
 class Package:
     def __init__(self, packageID: str, address: str, city:str, state: str, zip:str, deadline: str, weight: str, notes: str, status="Undelivered"):
         """Class constructor function that defines a Package object.
+        
         Args:
             packageID (int): The ID of the package.
             address (str): The delivery address the package must be delivered to.
@@ -24,6 +25,7 @@ class Package:
     
     def toString(self) -> str:
         """ Helper function to display package information in a legible format.
+        
         Returns:
             str: String value in the format of [Package ID] | Address | Deadline | Weight | Special Notes
         """
@@ -67,6 +69,7 @@ class Package:
     
     def updateStatus(self, newStatus: str):
         """ Updates the delivery status of the package.
+        
         Args:
             newStatus (str): The new status of the package (Undelivered or Delivered).
         """
@@ -74,6 +77,7 @@ class Package:
     
     def updateAddress(self, newAddress: str, newCity: str, newState: str, newZip: str):
         """ Updates the address of a package.
+        
         Args:
             newAddress (str): Package's new destination street address.
             newCity (str): Package's new destination city.

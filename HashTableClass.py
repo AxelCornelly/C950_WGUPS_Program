@@ -3,6 +3,7 @@ class HashTable:
     def __init__(self, size=10):
         """ Class constructor with an optional parameter for size of the hash table.
         By default, creates a hash table of size 10, filling each bucket with an empty list.
+        
         Args:
             size (int): [Optional] The size of the hash table, or number of "buckets".
         """
@@ -13,6 +14,7 @@ class HashTable:
     def findBucket(self, key: int) -> int:
         """ Helper function to perform hashing on an item's key and apply modulus to the
         length of the table. Returns an integer that defines the bucket in the table.
+        
         Args:
             key (int): The specified key (package ID).
         Returns:
@@ -24,6 +26,7 @@ class HashTable:
     def addPackage(self, package: Package):
         """ This function adds package objects into the hash table. Addresses collisions
         by using chaining.
+        
         Args:
             package (Package): Package to add to the hash table."""
         
@@ -48,6 +51,7 @@ class HashTable:
         and has a worst-case run time of *O*(*n*), *n* being the number of elements in the hash table. Returns the package if a matching key is found, otherwise
         returns None.
         numbered list
+        
         Args:
             key (int): The key of a package (Package ID).
         Returns:
@@ -65,6 +69,7 @@ class HashTable:
     
     def removePackage(self, key: int):
         """ This function removes a package given a key (package ID).
+        
         Args:
             key (int): The key to look for and remove a package from.
         """
