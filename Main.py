@@ -1,6 +1,7 @@
 import csv
 from PackageClass import Package
 from HashTableClass import HashTable
+from TruckClass import Truck
 
 # Initializing data structures
 packageHash = HashTable() # Custom class that creates a hash table using lists.
@@ -93,7 +94,7 @@ def nearestNeighbor(currPackage: Package, truckPackages: list[Package]) -> Packa
 
 if __name__ == "__main__":
     readPackages("WGUPS Package File.csv")
-    # packageHash.showContents()
+    packageHash.showContents()
     readDistances("WGUPS Distance Table.csv")
     # for row in addresses:
     #     print(row)
@@ -101,3 +102,5 @@ if __name__ == "__main__":
     # for row in distances:
     #   print(row)
     
+    t1 = Truck()
+    t1.loadPackages(packageHash)
