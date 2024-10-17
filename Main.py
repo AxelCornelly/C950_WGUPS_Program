@@ -1,7 +1,6 @@
 import csv
 from PackageClass import Package
 from HashTableClass import HashTable
-from TruckClass import Truck
 
 # Initializing data structures
 packageHash = HashTable() # Custom class that creates a hash table using lists.
@@ -36,65 +35,104 @@ def readDistances(distanceFile):
             addresses.append(line[0]) # The first item in the row will be the address
             distances.append(line[1:]) # The following items after will be distances
 
-def findDistBetween(loc1,loc2) -> float:
-    """ Finds the distance between 2 entered addresses from the distances table. This function
-    performs an index check to accommodate for the assumption that the distances between each
-    address is the same in both directions. Therefore, the csv file would only contain half of
-    the full table and would be formatted to not have any duplicate values.
+class Truck:
+    def __init__(self, truckName):
+        self.truckName = truckName
+        self.packages = []
     
-    E.g:
-    location1: 0.0, _ , _ , _ , _ , _
-    location2: 2.3, 0.0, _ , _ , _ , _
-    location3: 3.5, 6.6, 0.0, _ , _ , _
-    and so on...
+    def getTruckName(self) -> str:
+        """ Returns the name of the truck.
+        
+        Returns:
+            (str): The name of the truck."""
+        return self.truckName
     
-    Where 0.0 is the location's distance to itself.
+    def getTruckPackages(self) -> list[Package]:
+        """ Returns the list of packages on the truck.
+        
+        Returns:
+            (list[Packages]): A list containing Package objects.
+        """
+        return self.packages
     
-    Args:
-        loc1 (str): String of the first location.
-        loc2 (str): String of the second location.
-    
-    Returns:
-        dist (float): The distance between the two locations in miles.
-    """
-    dist = 0.0
-    index1 = addresses.index(loc1) # index of first location
-    index2 = addresses.index(loc2) # index of second location
+    def findDistBetween(self, loc1: str, loc2: str) -> float:
+        """ Finds the distance between 2 entered addresses from the distances table. This function
+        performs an index check to accommodate for the assumption that the distances between each
+        address is the same in both directions. Therefore, the csv file would only contain half of
+        the full table and would be formatted to not have any duplicate values.
+        
+        E.g:
+        location1: 0.0, _ , _ , _ , _ , _
+        location2: 2.3, 0.0, _ , _ , _ , _
+        location3: 3.5, 6.6, 0.0, _ , _ , _
+        and so on...
+        
+        Where 0.0 is the location's distance to itself.
+        
+        Args:
+            loc1 (str): String of the first location.
+            loc2 (str): String of the second location.
+        
+        Returns:
+            dist (float): The distance between the two locations in miles.
+        """
+        dist = 0.0
+        index1 = addresses.index(loc1) # index of first location
+        index2 = addresses.index(loc2) # index of second location
 
-    # Index check
-    if(distances[index1][index2] == ''):
-        dist = distances[index2][index1]
+        # Index check
+        if(distances[index1][index2] == ''):
+            dist = distances[index2][index1]
+            return dist
+        dist = distances[index1][index2]
         return dist
-    dist = distances[index1][index2]
-    return dist
 
-def nearestNeighbor(currPackage: Package, truckPackages: list[Package]) -> Package:
-    """ Determines the next closest package using the nearest-neighbor greedy algorithm.
+    def nearestNeighbor(self, currAddress: str, packageList: list[Package]) -> str:
+        """ Determines the next closest package using the nearest-neighbor greedy algorithm.
+        
+        Args:
+            currAddress (str): The current address to compare to.
+            packageList (list): The list of packages.
+        
+        Returns:
+            nearest (str): The closest address to currAddress.
+        """
+        minDist = float('inf') # Infinity
+        nearest = currAddress # Initially set to currentPackage since it is closest to itself.
+        
+        # Loop through all the packages on the truck calling findDistBetween()
+        for package in packageList:
+            dist = self.findDistBetween(currAddress, package.getAddress())
+            if dist < minDist:
+                minDist = dist
+                nearest = package.getAddress()
+        
+        return nearest
     
-    Args:
-        currPackage (Package): The current package to compare to.
-        truckPackages (list): The list of packages that are on a truck.
     
-    Returns:
-        nearest (Package): The package with the nearest address to the current one.
-    """
-    minDist = float('inf') # Infinity
-    nearest = currPackage # Initially set to currentPackage since it is closest to itself.
-    
-    # Loop through all the packages on the truck calling findDistBetween()
-    for package in truckPackages:
-        dist = findDistBetween(currPackage.getAddress(), package.getAddress())
-        if dist < minDist:
-            minDist = dist
-            nearest = package
-    
-    return nearest
-
-
+    def loadPackages(self, packages: HashTable):
+        """ Loads a maximum of 16 packages on to the truck. Performs checks to
+        satisfy program assumptions such as:
+        Max num of packages = 16
+        Loading time is instant
+        Complies with any and all Special Notes on packages
+        
+        Args:
+            packages (HashTable): The HashTable object of packages to load from.
+        """
+        for bucket in packages.table: # [[Bucket0], [Bucket1], [Bucket2], [Bucket3], ...]
+            for items in bucket: # [[Package ID, Package], [Package ID, Package], ...]
+                # First check for capacity
+                if len(self.packages) >= 16:
+                    break
+        
+                # Check for special notes
+                
+                
 
 if __name__ == "__main__":
     readPackages("WGUPS Package File.csv")
-    packageHash.showContents()
+    # packageHash.showContents()
     readDistances("WGUPS Distance Table.csv")
     # for row in addresses:
     #     print(row)
@@ -102,5 +140,5 @@ if __name__ == "__main__":
     # for row in distances:
     #   print(row)
     
-    t1 = Truck()
+    t1 = Truck("Truck 1")
     t1.loadPackages(packageHash)
