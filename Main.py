@@ -1,6 +1,7 @@
-import csv
+import csv, datetime
 from PackageClass import Package
 from HashTableClass import HashTable
+from TruckClass import Truck
 
 # Initializing data structures
 packageHash = HashTable() # Custom class that creates a hash table using lists.
@@ -35,27 +36,7 @@ def readDistances(distanceFile):
             addresses.append(line[0]) # The first item in the row will be the address
             distances.append(line[1:]) # The following items after will be distances
 
-class Truck:
-    def __init__(self, truckName):
-        self.truckName = truckName
-        self.packages = []
-    
-    def getTruckName(self) -> str:
-        """ Returns the name of the truck.
-        
-        Returns:
-            (str): The name of the truck."""
-        return self.truckName
-    
-    def getTruckPackages(self) -> list[Package]:
-        """ Returns the list of packages on the truck.
-        
-        Returns:
-            (list[Packages]): A list containing Package objects.
-        """
-        return self.packages
-    
-    def findDistBetween(self, loc1: str, loc2: str) -> float:
+def findDistBetween(loc1: str, loc2: str) -> float:
         """ Finds the distance between 2 entered addresses from the distances table. This function
         performs an index check to accommodate for the assumption that the distances between each
         address is the same in both directions. Therefore, the csv file would only contain half of
@@ -87,48 +68,66 @@ class Truck:
         dist = distances[index1][index2]
         return dist
 
-    def nearestNeighbor(self, currAddress: str, packageList: list[Package]) -> str:
-        """ Determines the next closest package using the nearest-neighbor greedy algorithm.
-        
-        Args:
-            currAddress (str): The current address to compare to.
-            packageList (list): The list of packages.
-        
-        Returns:
-            nearest (str): The closest address to currAddress.
-        """
-        minDist = float('inf') # Infinity
-        nearest = currAddress # Initially set to currentPackage since it is closest to itself.
-        
-        # Loop through all the packages on the truck calling findDistBetween()
-        for package in packageList:
-            dist = self.findDistBetween(currAddress, package.getAddress())
-            if dist < minDist:
-                minDist = dist
-                nearest = package.getAddress()
-        
-        return nearest
+def nearestNeighbor(currAddress: str, packageList: list[Package]) -> str:
+    """ Determines the next closest package using the nearest-neighbor greedy algorithm.
     
+    Args:
+        currAddress (str): The current address to compare to.
+        packageList (list): The list of packages.
     
-    def loadPackages(self, packages: HashTable):
-        """ Loads a maximum of 16 packages on to the truck. Performs checks to
-        satisfy program assumptions such as:
-        Max num of packages = 16
-        Loading time is instant
-        Complies with any and all Special Notes on packages
-        
-        Args:
-            packages (HashTable): The HashTable object of packages to load from.
-        """
-        for bucket in packages.table: # [[Bucket0], [Bucket1], [Bucket2], [Bucket3], ...]
-            for items in bucket: # [[Package ID, Package], [Package ID, Package], ...]
-                # First check for capacity
-                if len(self.packages) >= 16:
-                    break
-        
-                # Check for special notes
-                
-                
+    Returns:
+        nearest (str): The closest address to currAddress.
+    """
+    minDist = float('inf') # Infinity
+    nearest = currAddress # Initially set to currentPackage since it is closest to itself.
+    
+    # Loop through all the packages on the truck calling findDistBetween()
+    for package in packageList:
+        dist = self.findDistBetween(currAddress, package.getAddress())
+        if dist < minDist:
+            minDist = dist
+            nearest = package.getAddress()
+    
+    return nearest
+
+def loadPackages(packages: HashTable, trucks: list[Truck]):
+    """ Loads a maximum of 16 packages on to the truck. Performs checks to
+    satisfy program assumptions such as:
+    Max num of packages = 16
+    Loading time is instant
+    Complies with any and all Special Notes on packages
+    
+    Args:
+        packages (HashTable): The HashTable object of packages to load from.
+        trucks (list[Truck]): A list of Truck objects to load.
+    """
+    for bucket in packages.table: # [[Bucket0], [Bucket1], [Bucket2], [Bucket3], ...]
+        for items in bucket: # [[Package ID, Package], [Package ID, Package], ...]
+            # First check for capacity
+            if len(self.packages) >= 16:
+                break
+            
+            currPackage = items[1]
+            # Check for special notes
+            packageNotes = currPackage.getNotes()
+            # Parse the note
+            keywords = ["truck 2", "Delayed", "Must be delivered with", "Wrong address"]
+            for keyword in keywords:
+                if (keyword in packageNotes) and keyword == "truck 2": # Check for Truck 2
+                    if(self.getTruckName() == "Truck 2"):
+                        self.packages.append(currPackage)
+                elif (keyword in packageNotes) and keyword == "Delayed": # Check if delayed
+                    notesSplit = packageNotes.split(" ")
+                    delayedUntil = datetime.datetime.strptime(notesSplit[8], "%H:%M")
+                    timeDiff = delayedUntil - currTime
+                    if (timeDiff < 0): # If current time is after expected arrival of package
+                        self.packages.append(currPackage)
+                elif (keyword in packageNotes) and keyword == "Must be delivered with": # Check if needs to be with another package
+                    # if something then something
+                elif (keyword in packageNotes) and keyword == "Wrong address": # Check if wrong address (similar to delayed)
+                    # if something then something
+                else:
+                    # blah                
 
 if __name__ == "__main__":
     readPackages("WGUPS Package File.csv")
@@ -140,5 +139,5 @@ if __name__ == "__main__":
     # for row in distances:
     #   print(row)
     
-    t1 = Truck("Truck 1")
-    t1.loadPackages(packageHash)
+    # t1 = Truck("Truck 1")
+    # t1.loadPackages(packageHash)
