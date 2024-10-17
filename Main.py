@@ -108,26 +108,7 @@ def loadPackages(packages: HashTable, trucks: list[Truck]):
                 break
             
             currPackage = items[1]
-            # Check for special notes
-            packageNotes = currPackage.getNotes()
-            # Parse the note
-            keywords = ["truck 2", "Delayed", "Must be delivered with", "Wrong address"]
-            for keyword in keywords:
-                if (keyword in packageNotes) and keyword == "truck 2": # Check for Truck 2
-                    if(self.getTruckName() == "Truck 2"):
-                        self.packages.append(currPackage)
-                elif (keyword in packageNotes) and keyword == "Delayed": # Check if delayed
-                    notesSplit = packageNotes.split(" ")
-                    delayedUntil = datetime.datetime.strptime(notesSplit[8], "%H:%M")
-                    timeDiff = delayedUntil - currTime
-                    if (timeDiff < 0): # If current time is after expected arrival of package
-                        self.packages.append(currPackage)
-                elif (keyword in packageNotes) and keyword == "Must be delivered with": # Check if needs to be with another package
-                    # if something then something
-                elif (keyword in packageNotes) and keyword == "Wrong address": # Check if wrong address (similar to delayed)
-                    # if something then something
-                else:
-                    # blah                
+                          
 
 if __name__ == "__main__":
     readPackages("WGUPS Package File.csv")
