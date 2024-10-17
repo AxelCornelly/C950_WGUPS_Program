@@ -22,6 +22,22 @@ class Package:
         self.weight = weight
         self.notes = notes
         self.status = status
+        self.requiresTruck = False
+        self.requiresPackage = False
+
+        # Checks for any Special Notes and applies restriction
+        if (self.notes != ""): # Check if there even is a note
+            keywords = ["truck 2", "Delayed", "Must be delivered with"]
+            for keyword in keywords:
+                if (keyword in self.notes) and keyword == "truck 2": # Check for truck requirement
+                    self.requiresTruck = True
+                elif (keyword in self.notes) and keyword == "Delayed": # Check if delayed
+                    self.status = "Delayed"
+                elif (keyword in self.notes) and keyword == "Must be delivered with": # Check if needs to be with another package
+                    self.requiresPackage = True
+                else:
+                    # Do nothing
+                    print("")
     
     def toString(self) -> str:
         """ Helper function to display package information in a legible format.
@@ -59,7 +75,7 @@ class Package:
         """ Returns package's weight in kilos."""
         return int(self.weight)
     
-    def getNotes(self) -> str:
+    def getNotes(self) -> str | None:
         """ Returns any special notes attached to the package."""
         return self.notes
 
