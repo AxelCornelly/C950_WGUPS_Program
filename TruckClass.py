@@ -1,11 +1,11 @@
 class Truck:
-    def __init__(self, truckName):
-        self.truckName = truckName
+    def __init__(self, truckID):
+        self.truckID = truckID
         self.packages = []
     
-    def getTruckName(self) -> str:
-        """ Returns the name of the truck.
+    def getTruckID(self) -> int:
+        """ Returns the truck's ID.
         
         Returns:
-            (str): The name of the truck."""
-        return self.truckName
+            (int): The ID of the truck."""
+        return self.truckID
