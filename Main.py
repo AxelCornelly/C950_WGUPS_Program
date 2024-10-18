@@ -120,6 +120,7 @@ def loadPackages(packageHash: HashTable, trucks: list[Truck]):
                 break
             nearestPkg = nearestNeighbor("HUB", packageHash.getAllPackages())
             
+            
 
 
                 
