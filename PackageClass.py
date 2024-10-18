@@ -1,7 +1,8 @@
 class Package:
-    def __init__(self, packageID: str, address: str, city:str, state: str, zip:str, deadline: str, weight: str, notes: str, status="Undelivered"):
+    def __init__(self, packageID="-1", address="", city="", state="", zip="", deadline="", weight="", notes="", status="Undelivered"):
         """Class constructor function that defines a Package object.
-        
+        Attributes have defaults if no values are entered.
+
         Args:
             packageID (int): The ID of the package.
             address (str): The delivery address the package must be delivered to.

@@ -68,7 +68,7 @@ def findDistBetween(loc1: str, loc2: str) -> float:
         dist = distances[index1][index2]
         return dist
 
-def nearestNeighbor(currAddress: str, packageList: list[Package]) -> str:
+def nearestNeighbor(currAddress: str, packageList: list[Package]) -> Package:
     """ Determines the next closest package using the nearest-neighbor greedy algorithm.
     
     Args:
@@ -76,21 +76,21 @@ def nearestNeighbor(currAddress: str, packageList: list[Package]) -> str:
         packageList (list): The list of packages.
     
     Returns:
-        nearest (str): The closest address to currAddress.
+        nearest (Package): The closest package to currAddress.
     """
     minDist = float('inf') # Infinity
-    nearest = currAddress # Initially set to currentPackage since it is closest to itself.
+    nearest = Package() # Initially set to empty Package object.
     
     # Loop through all the packages on the truck calling findDistBetween()
     for package in packageList:
-        dist = self.findDistBetween(currAddress, package.getAddress())
+        dist = findDistBetween(currAddress, package.getAddress())
         if dist < minDist:
             minDist = dist
-            nearest = package.getAddress()
+            nearest = package
     
     return nearest
 
-def loadPackages(packages: HashTable, trucks: list[Truck]):
+def loadPackages(packageHash: HashTable, trucks: list[Truck]):
     """ Loads a maximum of 16 packages on to the truck. Performs checks to
     satisfy program assumptions such as:
     Max num of packages = 16
@@ -101,13 +101,28 @@ def loadPackages(packages: HashTable, trucks: list[Truck]):
         packages (HashTable): The HashTable object of packages to load from.
         trucks (list[Truck]): A list of Truck objects to load.
     """
-    for bucket in packages.table: # [[Bucket0], [Bucket1], [Bucket2], [Bucket3], ...]
-        for items in bucket: # [[Package ID, Package], [Package ID, Package], ...]
-            # First check for capacity
-            if len(self.packages) >= 16:
+    # for truck in trucks:
+    #     for bucket in packages.table: # [[Bucket0], [Bucket1], [Bucket2], [Bucket3], ...]
+    #         for items in bucket: # [[Package ID, Package], [Package ID, Package], ...]
+    #             # First check for capacity
+    #             if len(truck.packages) >= 16:
+    #                 break
+                
+    #             currPackage = items[1]
+    
+    # TEST
+    for truck in trucks:
+        if(len(packageHash.getAllPackages()) == 0): # No more packages
+            print("EMPTY")
+            break
+        else:
+            if(len(truck.packages) >= 16 or truck.getTruckStatus() == "Delivering"):
                 break
+            nearestPkg = nearestNeighbor("HUB", packageHash.getAllPackages())
             
-            currPackage = items[1]
+
+
+                
                           
 
 if __name__ == "__main__":
@@ -120,5 +135,8 @@ if __name__ == "__main__":
     # for row in distances:
     #   print(row)
     
-    # t1 = Truck("Truck 1")
-    # t1.loadPackages(packageHash)
+    # t1 = Truck(1)
+    # t2 = Truck(2)
+    # t3 = Truck(3)
+    # truckList = [t1, t2, t3]
+    # loadPackages(packageHash, truckList)

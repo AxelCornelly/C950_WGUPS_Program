@@ -67,6 +67,21 @@ class HashTable:
                 return keyval[1] # The Package
         return None # If not found
     
+    def getAllPackages(self) -> list[Package]:
+        """ Returns a list of all existing packages in the table. Does not include the package's key.
+        
+        Returns:
+            vals (list[Package]): List of Package objects in the table.
+        """
+        vals = []
+        if(len(self.table) == 0):
+            return vals
+        else:
+            for bucket in self.table:
+                for keyval in bucket:
+                    vals.append(keyval[1])
+        return vals
+    
     def removePackage(self, key: int):
         """ This function removes a package given a key (package ID).
         
