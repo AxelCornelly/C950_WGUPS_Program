@@ -111,14 +111,32 @@ def loadPackages(packageHash: HashTable, trucks: list[Truck]):
     #             currPackage = items[1]
     
     # TEST
-    for truck in trucks:
-        if(len(packageHash.getAllPackages()) == 0): # No more packages
-            print("EMPTY")
+    # Initially load packages manually based on certain restrictions
+    pkgBundles = [13, 14, 15, 16, 19, 20]
+
+    for id in pkgBundles:
+        if packageHash.searchPackage(id) is None:
             break
+        
+        trucks[0].packages.append()
+
+    packages = packageHash.getAllPackages()
+    for truck in trucks:
+        if(len(packages) == 0): # No more packages
+            print("EMPTY")
+            continue
         else:
             if(len(truck.packages) >= 16 or truck.getTruckStatus() == "Delivering"):
-                break
-            nearestPkg = nearestNeighbor("HUB", packageHash.getAllPackages())
+                continue
+            while len(truck.packages) < 16:
+                nearestPkg = nearestNeighbor("HUB", packages)
+                # Perform restriction checks
+                if(nearestPkg.getStatus() == "Delayed"):
+                    trucks[2].packages.append(nearestPkg)
+                elif(nearestPkg.requiresTruck): # Requires Truck 2
+                    trucks[1].packages.append(nearestPkg)
+                elif()
+                
             
             
 

@@ -82,7 +82,7 @@ class HashTable:
                     vals.append(keyval[1])
         return vals
     
-    def removePackage(self, key: int):
+    def removePackage(self, key: int) -> Package | None:
         """ This function removes a package given a key (package ID).
         
         Args:
@@ -95,7 +95,8 @@ class HashTable:
         # Remove package if exists
         for keyval in bucketList:
             if keyval[0] == key:
-                bucketList.remove([keyval[0],keyval[1]])
+                return bucketList.pop([keyval[0],keyval[1]])
+        return None
 
     def showContents(self):
         """ Helper function to print out contents of the hash table in a more legible way."""
