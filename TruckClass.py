@@ -1,5 +1,5 @@
 class Truck:
-    def __init__(self, truckID, truckCapacity=16):
+    def __init__(self, truckID: int, truckCapacity=16):
         self.truckID = truckID
         self.capacity = truckCapacity
         self.packages = []
