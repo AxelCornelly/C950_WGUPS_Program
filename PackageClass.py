@@ -12,7 +12,7 @@ class Package:
             deadline (DateTime): The time of day that the package must be delivered by.
             weight (int): The weight of the package in kilos.
             notes (str): The additional notes that are attached to the package.
-            status (str): The status of the package. Defaults to 'Undelivered'.
+            status (str): The status of the package. Defaults to 'Undelivered'. Options include: "Undelivered", "Delayed", "On Truck", "Delivered".
         """
         self.packageID = packageID
         self.address = address
