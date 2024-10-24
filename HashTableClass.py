@@ -82,11 +82,14 @@ class HashTable:
                     vals.append(keyval[1])
         return vals
     
-    def removePackage(self, key: int) -> Package | None:
+    def removePackage(self, key: int) -> None:
         """ This function removes a package given a key (package ID).
         
         Args:
             key (int): The key to look for and remove a package from.
+
+        Returns:
+            None: None if the Package is not found within the table.
         """
         # Locate bucket
         bucket = self.findBucket(key)
@@ -95,7 +98,7 @@ class HashTable:
         # Remove package if exists
         for keyval in bucketList:
             if keyval[0] == key:
-                return bucketList.pop([keyval[0],keyval[1]])
+                bucketList.remove([keyval[0],keyval[1]])
         return None
 
     def showContents(self):
