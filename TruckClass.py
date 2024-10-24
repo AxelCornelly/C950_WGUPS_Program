@@ -1,6 +1,7 @@
 class Truck:
-    def __init__(self, truckID):
+    def __init__(self, truckID, truckCapacity=16):
         self.truckID = truckID
+        self.capacity = truckCapacity
         self.packages = []
         self.status = "At Hub"
     
@@ -16,6 +17,6 @@ class Truck:
         
         Returns:
             (str): Status of the truck. 
-            Options are: 'At Hub', 'Delivering'
+            Options are: 'At Hub', 'Delivering', 'Finished Delivering'
         """
         return self.status
