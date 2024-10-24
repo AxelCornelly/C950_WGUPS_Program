@@ -2,6 +2,7 @@ import csv, datetime
 from PackageClass import Package
 from HashTableClass import HashTable
 from TruckClass import Truck
+from DeliverLogic import deliverPackages
 
 # Initializing data structures
 packageHash = HashTable() # Custom class that creates a hash table using lists.
@@ -83,14 +84,14 @@ def nearestNeighbor(currAddress: str, packageList: list[Package]) -> Package:
     
     # Loop through all the packages on the truck calling findDistBetween()
     for package in packageList:
-        dist = findDistBetween(currAddress, package.getAddress())
+        dist = float(findDistBetween(currAddress, package.getAddress()))
         if dist < minDist:
             minDist = dist
             nearest = package
     
     return nearest
 
-def loadPackages(packageHash: HashTable, trucks: list[Truck]):
+def loadPackages(packageHashTable: HashTable, trucks: list[Truck]):
     """ Loads a maximum of 16 packages on to the truck. Performs checks to
     satisfy program assumptions such as:
     Max num of packages = 16
@@ -101,61 +102,69 @@ def loadPackages(packageHash: HashTable, trucks: list[Truck]):
         packages (HashTable): The HashTable object of packages to load from.
         trucks (list[Truck]): A list of Truck objects to load.
     """
-    # for truck in trucks:
-    #     for bucket in packages.table: # [[Bucket0], [Bucket1], [Bucket2], [Bucket3], ...]
-    #         for items in bucket: # [[Package ID, Package], [Package ID, Package], ...]
-    #             # First check for capacity
-    #             if len(truck.packages) >= 16:
-    #                 break
-                
-    #             currPackage = items[1]
-    
-    # TEST
     # Initially load packages manually based on certain restrictions
-    pkgBundles = [13, 14, 15, 16, 19, 20]
-
-    for id in pkgBundles:
-        if packageHash.searchPackage(id) is None:
+    
+    # Check if package is dependent on another, load them on Truck 1
+    for package in packageHashTable.getAllPackages():
+        parentPkg = [13,15,19] # List of Package IDs of Packages that have dependents
+        if package.requiresPackage or package.getID() in parentPkg:
+            trucks[0].packages.append(package)
+            package.updateStatus("On Truck")
+            packageHashTable.removePackage(package.getID())
+        
+    # Load packages that must be on Truck 2
+    for package in packageHashTable.getAllPackages():    
+        if package.requiresTruck:
+            trucks[1].packages.append(package)
+            package.updateStatus("On Truck")
+            packageHashTable.removePackage(package.getID())
+        
+    # Skip packages that are delayed. They'll be loaded when they arrive.
+    for package in packageHashTable.getAllPackages():    
+        if package.getStatus() == "Delayed":
+            trucks[2].packages.append(package)
+            packageHashTable.removePackage(package.getID())
+    
+    # General package loading
+    for truck in trucks:
+        # If there aren't any more packages, don't do anything
+        if(len(packageHashTable.getAllPackages()) == 0):
+            print("EMPTY")
             break
         
-        trucks[0].packages.append()
-
-    packages = packageHash.getAllPackages()
-    for truck in trucks:
-        if(len(packages) == 0): # No more packages
-            print("EMPTY")
+        # If truck is full or is out delivering, skip truck
+        if(len(truck.packages) == truck.capacity or truck.getTruckStatus() == "Delivering"):
             continue
-        else:
-            if(len(truck.packages) >= 16 or truck.getTruckStatus() == "Delivering"):
-                continue
-            while len(truck.packages) < 16:
-                nearestPkg = nearestNeighbor("HUB", packages)
-                # Perform restriction checks
-                if(nearestPkg.getStatus() == "Delayed"):
-                    trucks[2].packages.append(nearestPkg)
-                elif(nearestPkg.requiresTruck): # Requires Truck 2
-                    trucks[1].packages.append(nearestPkg)
-                elif()
-                
-            
-            
 
-
-                
-                          
+        # Load truck until capactity is reached
+        while len(truck.packages) < truck.capacity:
+            # Always check packages list to see if empty at any point
+            if(len(packageHashTable.getAllPackages()) == 0):
+                break
+            
+            # Find nearest package
+            nearestPkg = nearestNeighbor("HUB", packageHashTable.getAllPackages())
+            truck.packages.append(nearestPkg) # Add to truck's list
+            nearestPkg.updateStatus("On Truck") # Update package status
+            packageHashTable.removePackage(nearestPkg.getID()) # Remove from package HashTable
+                                     
 
 if __name__ == "__main__":
     readPackages("WGUPS Package File.csv")
     # packageHash.showContents()
     readDistances("WGUPS Distance Table.csv")
-    # for row in addresses:
-    #     print(row)
     
-    # for row in distances:
-    #   print(row)
+    t1 = Truck(1)
+    t2 = Truck(2)
+    t3 = Truck(3)
+    truckList = [t1, t2, t3]
+    loadPackages(packageHash, truckList)
     
-    # t1 = Truck(1)
-    # t2 = Truck(2)
-    # t3 = Truck(3)
-    # truckList = [t1, t2, t3]
-    # loadPackages(packageHash, truckList)
+    for t in truckList:
+        for p in t.packages:
+            print(f"Truck {t.getTruckID()}: {p.toString()}")
+        
+        print(f"Truck {t.getTruckID()} has: {len(t.packages)} packages.")
+    
+    # deliverPackages(truckList, t1, "08:00:00", packageHash)
+    
