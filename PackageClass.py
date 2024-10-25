@@ -1,3 +1,6 @@
+import datetime
+
+
 class Package:
     def __init__(self, packageID="-1", address="", city="", state="", zip="", deadline="", weight="", notes="", status="Undelivered"):
         """Class constructor function that defines a Package object.
@@ -9,7 +12,7 @@ class Package:
             city (str): The city where the address is located.
             state (str): The state where the address is located.
             zip (str): The zipcode of the address.
-            deadline (DateTime): The time of day that the package must be delivered by.
+            deadline (str): The time of day that the package must be delivered by.
             weight (int): The weight of the package in kilos.
             notes (str): The additional notes that are attached to the package.
             status (str): The status of the package. Defaults to 'Undelivered'. Options include: "Undelivered", "Delayed", "On Truck", "Delivered".
@@ -25,6 +28,7 @@ class Package:
         self.status = status
         self.requiresTruck = False
         self.requiresPackage = False
+        self.deliveredTime = None
 
         # Checks for any Special Notes and applies restriction
         if (self.notes != ""): # Check if there even is a note
@@ -82,7 +86,12 @@ class Package:
 
     def getStatus(self) -> str:
         """ Returns the delivery status of the package."""
-        return self.status
+        returnedStatus = ""
+        if self.deliveredTime == None:
+            returnedStatus = self.status
+            return returnedStatus
+        returnedStatus = f"{self.status} at {datetime.datetime.strftime(self.deliveredTime, "%H:%M %p")}"
+        return returnedStatus
     
     def updateStatus(self, newStatus: str):
         """ Updates the delivery status of the package.
@@ -106,4 +115,6 @@ class Package:
         self.state = newState
         self.zip = newZip
 
+    def setDeliveredTime(self, deliveredTime: datetime.datetime):
+        self.deliveredTime = deliveredTime
     
