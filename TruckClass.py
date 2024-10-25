@@ -17,6 +17,14 @@ class Truck:
         
         Returns:
             (str): Status of the truck. 
-            Options are: 'At Hub', 'Delivering', 'Finished Delivering'
+            Options are: 'At Hub', 'Delivering', 'Finished Delivering', 'Heading back to Hub'
         """
         return self.status
+
+    def setTruckStatus(self, newStatus: str):
+        """ Updates the Truck object's status to the input.
+        
+        Args:
+            newStatus (str): Status of the truck.
+        """
+        self.status = newStatus
