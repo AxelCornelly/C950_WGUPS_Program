@@ -55,6 +55,7 @@ def deliverPackages(trucks, startTruck: Truck, startTime):
                     if distToNext > 0:
                         totalTravelDist += (18/60) # Increment travel distance. Truck travels at 18 mph
                         progress += (18/60) # Increment progress distance.
+                        startTruck.mileage += (18/60) # Increment Truck's total mileage
                         # print(f"Dist to Next: {round(distToNext, 2)} miles")
                         # print(f"Progress: {round(progress, 2)} miles")
 
@@ -92,6 +93,7 @@ def deliverPackages(trucks, startTruck: Truck, startTime):
                 if distToNext > 0:
                     totalTravelDist += (18/60)
                     progress += (18/60)
+                    startTruck.mileage += (18/60)
 
                     # Once returned, put Truck out of commission, start Truck 3
                     if progress >= distToNext:
@@ -105,23 +107,100 @@ def deliverPackages(trucks, startTruck: Truck, startTime):
                             startTruck = trucks[2]
                             print(f"startTruck is now Truck {startTruck.getTruckID()}")
         
-        # Logic for Truck 3 to start delivering
-        if startTruck.getTruckID() == 3:
-            # First, deliver packages that have a deadline that is coming up
-            urgentPkgs = []
-            timeRn = currentTime
-            delta = datetime.timedelta(minutes=30) # Set to large time difference
-            for package in startTruck.packages:
-                if package.getDeadline() == "EOD": # If deadline is EOD, it is not urgent.
-                    continue
+        # Logic for Truck 3 to start delivering. Delivers urgent packages first
+        if startTruck.getTruckID() == 3 and startTruck.getTruckStatus() != "Finished Delivering":
+            if startTruck.getTruckStatus() != "Heading back to Hub":
+                # Update Truck status
+                startTruck.setTruckStatus("Delivering")
                 
-                # Add packages to list in order of urgency
-                pkgDeadline = datetime.datetime.strptime(package.getDeadline(), "%H:%M %p")
-                if((pkgDeadline - timeRn) < delta):
-                    delta = pkgDeadline - timeRn
-                    # ... TO DO: TIME MATH
-                
+                if len(startTruck.packages) != 0:
+                    # List to hold any urgent packages
+                    urgentPkgs = []
+                    
+                    # Add any urgent packages to list
+                    for package in startTruck.packages:
+                        if package.getDeadline() != "EOD": # If deadline is not EOD, it is urgent.
+                            urgentPkgs.append(package)
+                        
+                    # Deliver Urgent packages first
+                    if len(urgentPkgs) != 0:
+                        nearestUrgent = findNearestPkg(currAddress, urgentPkgs)
+                        distToNext = float(distBetween(currAddress, nearestUrgent.getAddress()))
 
+                        if distToNext > 0:
+                            totalTravelDist += (18/60) # Increment total travel
+                            progress += (18/60) # Increment Truck progress
+                            startTruck.mileage += (18/60) # Increment Truck mileage
+
+                            if progress >= distToNext:
+                                progress = 0
+                                currAddress = nearestUrgent.getAddress()
+                                
+                                # Deliver any packages with a shared address
+                                for package in urgentPkgs:
+                                    if package.getAddress() == currAddress:
+                                        package.updateStatus("Delivered")
+                                        package.setDeliveredTime(currentTime)
+                                        print(f"Truck {startTruck.getTruckID()} delivered Package {package.getID()} at {datetime.datetime.strftime(package.deliveredTime, "%H:%M %p")}. Deadline was {package.getDeadline()}")
+                                        urgentPkgs.remove(package)
+                                        startTruck.packages.remove(package)
+                    
+                    # Non-urgent Delivery process. Same as Truck 1 and 2
+                    nearestPkg = findNearestPkg(currAddress, startTruck.packages)
+                    distToNext = float(distBetween(currAddress, nearestPkg.getAddress()))
+                    
+                    if distToNext > 0:
+                        totalTravelDist += (18/60) # Increment travel distance. Truck travels at 18 mph
+                        progress += (18/60) # Increment progress distance.
+                        startTruck.mileage += (18/60) # Increment Truck's total mileage
+                        # print(f"Dist to Next: {round(distToNext, 2)} miles")
+                        # print(f"Progress: {round(progress, 2)} miles")
+
+                        # Deliver package(s) once arriving at destination
+                        if progress >= distToNext:
+                            # Reset progress and update current address
+                            progress = 0
+                            currAddress = nearestPkg.getAddress()
+                            
+                            # Find any other packages with the same address.
+                            sharedAddr = []
+                            
+                            if len(startTruck.packages) != 0:
+                                for package in startTruck.packages:
+                                    if package.getAddress() == currAddress:
+                                        sharedAddr.append(package)
+                                
+                                # Deliver package(s)
+                                for package in sharedAddr:
+                                    package.updateStatus("Delivered")
+                                    package.setDeliveredTime(currentTime)
+                                    print(f"Truck {startTruck.getTruckID()} delivered Package {package.getID()} at {datetime.datetime.strftime(package.deliveredTime, "%H:%M %p")}. Deadline was {package.getDeadline()}")
+                                    startTruck.packages.remove(package)
+                                
+                                # Empty sharedAddr list
+                                sharedAddr = []
+            
+                # If Truck package list is empty, deliveries complete, trigger return process.
+                if len(startTruck.packages) == 0: 
+                    # print(f"Truck {startTruck.getTruckID()} Empty!")
+                    progress = 0
+                    startTruck.setTruckStatus("Heading back to Hub")
+
+            # Start heading back to the Hub
+            if startTruck.getTruckStatus() == "Heading back to Hub":
+                distToNext = float(distBetween(currAddress, "HUB"))
+                if distToNext > 0:
+                    totalTravelDist += (18/60)
+                    progress += (18/60)
+                    startTruck.mileage += (18/60)
+
+                    # Once returned, put Truck out of commission
+                    if progress >= distToNext:
+                        progress = 0
+                        currAddress = "HUB"
+                        print(f"Truck {startTruck.getTruckID()} returned to Hub @ {datetime.datetime.strftime(currentTime, "%H:%M %p")}")
+                        startTruck.setTruckStatus("Finished Delivering")
+                        print(f"Truck {startTruck.getTruckID()} {startTruck.getTruckStatus()}")
         
         # If all Trucks are done delivering, end program
         if all(truck.getTruckStatus() == "Finished Delivering" for truck in trucks):
