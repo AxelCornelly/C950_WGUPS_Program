@@ -1,9 +1,10 @@
-import csv, datetime
+import csv
 import threading
 from PackageClass import Package
 from HashTableClass import HashTable
 from TruckClass import Truck
 from DeliverLogic import deliverPackages
+from GUI import startGUI
 
 # Initializing data structures
 packageHash = HashTable() # Custom class that creates a hash table using lists.
@@ -167,9 +168,11 @@ if __name__ == "__main__":
         
     #     print(f"Truck {t.getTruckID()} has: {len(t.packages)} packages.")
 
-    thread1 = threading.Thread(target=deliverPackages, args=(truckList, t1, "08:00 AM"))
-    thread2 = threading.Thread(target=deliverPackages, args=(truckList, t2, "08:00 AM"))
+    # thread1 = threading.Thread(target=deliverPackages, args=(truckList, t1, "08:00 AM"))
+    # thread2 = threading.Thread(target=deliverPackages, args=(truckList, t2, "08:00 AM"))
 
-    thread1.start()
-    thread2.start()
+    # thread1.start()
+    # thread2.start()
+
+    startGUI(truckList)
     

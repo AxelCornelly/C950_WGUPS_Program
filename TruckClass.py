@@ -1,9 +1,10 @@
 class Truck:
-    def __init__(self, truckID: int, truckCapacity=16):
+    def __init__(self, truckID: int, truckCapacity=16, mileage=0.0):
         self.truckID = truckID
         self.capacity = truckCapacity
         self.packages = []
         self.status = "At Hub"
+        self.mileage = mileage
     
     def getTruckID(self) -> int:
         """ Returns the truck's ID.
