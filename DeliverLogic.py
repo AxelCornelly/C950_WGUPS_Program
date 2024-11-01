@@ -4,10 +4,11 @@ import csv
 from TruckClass import Truck
 from PackageClass import Package
 
-def deliverPackages(trucks, startTruck: Truck, startTime):
+def deliverPackages(gui, trucks, startTruck: Truck, startTime):
     """ Initiates the delivery of packages for a given truck.
     
     Args:
+        gui (Tk()): A Tk() object which resembles the root of the GUI.
         trucks (list(Truck)): A list of all Truck objects.
         startTruck (Truck): The starting Truck object to start delivering.
         startTime (str): A string of the starting delivery time (08:00am).
