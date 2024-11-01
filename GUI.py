@@ -2,10 +2,8 @@ import tkinter as tk
 import threading
 from DeliverLogic import deliverPackages
 
-def control():
-    if controlBtn["text"] == "Start":
-        controlBtn["text"] = "Pause"
-        thread1
+def control(thread1, thread2):
+    print("yay")
 
 # Main window
 root = tk.Tk()
@@ -34,8 +32,12 @@ totalDistLabel.grid(column=0,row=1)
 updatesArea = tk.Text(master=updatesFrame,name="updatesArea",width=60,height=20,wrap="word",bg="light gray")
 updatesArea.grid(column=1,row=0, rowspan=3,columnspan=2)
 
+# Threads to run delivery program
+thread1 = None
+thread2 = None
+
 # Interactive button to Start/Stop/Resume program
-controlBtn = tk.Button(master=root,name="controlBtn",text="Start",command=control)
+controlBtn = tk.Button(master=root,name="controlBtn",text="Start",default="normal",command=control(thread1,thread2))
 controlBtn.grid(column=2,row=0)
 
 def startGUI(truckList):
@@ -53,6 +55,7 @@ def startGUI(truckList):
     # Threads to call delivery function
     thread1 = threading.Thread(target=deliverPackages, args=(root, truckList, truckList[0], "08:00 AM"))
     thread2 = threading.Thread(target=deliverPackages, args=(root, truckList, truckList[1], "08:00 AM"))
+    
     
     root.mainloop()
 
