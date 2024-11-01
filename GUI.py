@@ -2,13 +2,41 @@ import tkinter as tk
 import threading
 from DeliverLogic import deliverPackages
 
-def updateTimeEvent(progTime):
-    """ Updates the Program Time label as the program runs.
-    
-    Args:
-        progTime (datetime): A datetime object of the program's current running time.
-    """
-    
+def control():
+    if controlBtn["text"] == "Start":
+        controlBtn["text"] = "Pause"
+        thread1
+
+# Main window
+root = tk.Tk()
+root.title("WGUPS Delivery Program")
+root.geometry("1000x500")
+root.columnconfigure(1,weight=1,minsize=50)
+root.rowconfigure(1,weight=1,minsize=50)
+
+# Create frame to hold Truck Information
+truckFrame = tk.Frame(master=root, relief=tk.RIDGE, borderwidth=3)
+truckFrame.grid(column=0, row=0, columnspan=3)
+
+# Create Frame to hold Delivery Updates and Misc Info.
+updatesFrame = tk.Frame(master=root,relief=tk.SUNKEN, borderwidth=3)
+updatesFrame.grid(column=0,row=1,columnspan=3)
+
+# Label for Program Time
+timeLabel = tk.Label(master=updatesFrame, name="timeLabel", text="Program Time: 08:00 AM")
+timeLabel.grid(column=0, row=0)
+
+# Label for Total Distance Traveled
+totalDistLabel = tk.Label(master=updatesFrame, name="totalDistLabel", text="Total Distance Traveled: 0.0 miles")
+totalDistLabel.grid(column=0,row=1)
+
+# Delivery Updates text area
+updatesArea = tk.Text(master=updatesFrame,name="updatesArea",width=60,height=20,wrap="word",bg="light gray")
+updatesArea.grid(column=1,row=0, rowspan=3,columnspan=2)
+
+# Interactive button to Start/Stop/Resume program
+controlBtn = tk.Button(master=root,name="controlBtn",text="Start",command=control)
+controlBtn.grid(column=2,row=0)
 
 def startGUI(truckList):
     """ This method builds and starts the GUI portion of the program.
@@ -16,54 +44,15 @@ def startGUI(truckList):
     Args:
         truckList (list[Truck]): A list structure containing Truck objects.
     """
-
-    # Build main window
-    root = tk.Tk()
-    root.title("WGUPS Delivery Program")
-
-    # Create frame to hold Truck labels
-    truckFrame = tk.Frame(master=root, relief=tk.RAISED, borderwidth=3)
-    truckFrame.grid(column=0, row=0)
-
-    # Create labels for Truck info
-    trucksLabel = tk.Label(master=truckFrame, text="Delivery Trucks",)
-    truckStatusLabel = tk.Label(master=truckFrame, text="Truck Status")
-    truckMileageLabel = tk.Label(master=truckFrame, text="Truck Mileage")
+    # Populate Truck Frame with labels for each truck in truckList
+    # Truck Labels
+    for i in range(len(truckList)):
+        label = tk.Label(master=truckFrame, name=f"t{i+1}Label", text=f"Truck {i+1}")
+        label.grid(column=i,row=0,padx=50)
     
-    truckLabel1 = tk.Label(master=truckFrame, text= "Truck 1")
-    truck1StatusLabel = tk.Label(master=truckFrame, text="At Hub")
-    truck1MileageLabel = tk.Label(master=truckFrame, text="0.0")
-    
-    truckLabel2 = tk.Label(master=truckFrame, text= "Truck 2")
-    truck2StatusLabel = tk.Label(master=truckFrame, text="At Hub")
-    truck2MileageLabel = tk.Label(master=truckFrame, text="0.0")
-    
-    truckLabel3 = tk.Label(master=truckFrame, text= "Truck 3")
-    truck3StatusLabel = tk.Label(master=truckFrame, text="At Hub")
-    truck3MileageLabel = tk.Label(master=truckFrame, text="0.0")
-
-    trucksLabel.grid(column=0, row=0)
-    truckStatusLabel.grid(column=1, row=0)
-    truckMileageLabel.grid(column=2, row=0)
-
-    truckLabel1.grid(column=0, row=1)
-    truck1StatusLabel.grid(column=1, row=1)
-    truck1MileageLabel.grid(column=2, row=1)
-
-    truckLabel2.grid(column=0, row=2)
-    truck2StatusLabel.grid(column=1, row=2)
-    truck2MileageLabel.grid(column=2, row=2)
-
-    truckLabel3.grid(column=0, row=3)
-    truck3StatusLabel.grid(column=1, row=3)
-    truck3MileageLabel.grid(column=2, row=3)
-
-    # Label for Program Time
-    timeTitleLabel = tk.Label(root, text="Program Time")
-    timeTitleLabel.grid(column=0, row=1)
-    
-    timeLabel = tk.Label(root, text="08:00 AM")
-    timeLabel.grid(column=0, row=2)
-
+    # Threads to call delivery function
+    thread1 = threading.Thread(target=deliverPackages, args=(root, truckList, truckList[0], "08:00 AM"))
+    thread2 = threading.Thread(target=deliverPackages, args=(root, truckList, truckList[1], "08:00 AM"))
     
     root.mainloop()
+
