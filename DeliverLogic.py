@@ -38,6 +38,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
         if currentTime.hour == 10 and currentTime.minute == 20:
             for p in trucks[2].packages:
                 if p.getID() == 9:
+                    p.updateStatus("On Truck")
                     p.updateAddress("410 S State St", "Salt Lake City", "UT", "84111")
         
         # Truck Delivery Process
