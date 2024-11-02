@@ -126,6 +126,11 @@ def loadPackages(packageHashTable: HashTable, trucks: list[Truck]):
         if package.getStatus() == "Delayed":
             trucks[2].packages.append(package)
             packageHashTable.removePackage(package.getID())
+
+        if package.getID() == 9: # Treat Package 9 as a delayed package since its address is incorrect until 10:20 AM
+            trucks[2].packages.append(package)
+            package.updateStatus("Wrong Address")
+            packageHashTable.removePackage(package.getID())
     
     # General package loading
     for truck in trucks:
@@ -134,8 +139,8 @@ def loadPackages(packageHashTable: HashTable, trucks: list[Truck]):
             print("EMPTY")
             break
         
-        # If truck is full or is out delivering, skip truck
-        if(len(truck.packages) == truck.capacity or truck.getTruckStatus() == "Delivering"):
+        # If truck is full, skip truck
+        if(len(truck.packages) == truck.capacity):
             continue
 
         # Load truck until capactity is reached
