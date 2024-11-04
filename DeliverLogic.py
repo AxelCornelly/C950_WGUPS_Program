@@ -1,6 +1,7 @@
 import datetime
 import time
 import csv
+import tkinter as tk
 from TruckClass import Truck
 from PackageClass import Package
 
@@ -19,8 +20,14 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
     progress = 0.0 # Tracks Truck's travel distance in between stops
     currAddress = "HUB" # Initially set to HUB since all Trucks start there
     start_Time = datetime.datetime.strptime(startTime, "%H:%M %p").time()
+    guiRoot = gui
 
     while timer < 20000:
+        # Check if program is paused
+        if guiRoot.nametowidget("controlBtn")["text"] == "Resume":
+            while guiRoot.nametowidget("controlBtn")["text"] == "Resume":
+                time.sleep(0.1)
+        
         # Program speed
         timer += 1
         time.sleep(0.1)
