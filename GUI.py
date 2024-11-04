@@ -62,7 +62,6 @@ def startGUI(truckList):
 
     # Update Button command
     controlBtn.config(command=lambda: control(controlBtn,thread1,thread2))
-    
     root.mainloop()
 
 # Main window
