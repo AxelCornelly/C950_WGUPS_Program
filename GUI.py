@@ -11,7 +11,8 @@ def control(btn,thread1,thread2):
         btn["text"] = "Pause"
     elif btn["text"] == "Pause":
         btn["text"] = "Resume"
-
+    elif btn["text"] == "Exit":
+        root.destroy()
 
 def startGUI(truckList):
     """ This method builds and starts the GUI portion of the program.
@@ -25,10 +26,10 @@ def startGUI(truckList):
         truckLF.grid(column=index,row=0,padx=50,pady=10,sticky="N")
         
         # Truck Info
-        truckStatusLabel = tk.Label(master=truckLF,text="Status: At Hub")
+        truckStatusLabel = tk.Label(master=truckLF,name=f"t{index+1}StatusLabel",text="Status: At Hub")
         truckStatusLabel.grid(column=0,row=0)
         
-        mileageLabel = tk.Label(master=truckLF,text="Mileage: 0.0 miles")
+        mileageLabel = tk.Label(master=truckLF,name=f"t{index+1}MileageLabel",text="Mileage: 0.0 miles")
         mileageLabel.grid(column=2,row=0)
 
         sep = ttk.Separator(master=truckLF,orient="horizontal")
@@ -50,10 +51,10 @@ def startGUI(truckList):
         # Populate the Truck's container with its Packages and their info
         for idx, p in enumerate(truck.packages):
             
-            packageLabel = tk.Label(master=truckLF,text=f"Package {p.getID()}")
+            packageLabel = tk.Label(master=truckLF,name=f"p{p.getID()}Label",text=f"Package {p.getID()}")
             packageLabel.grid(column=0,row=idx+4)
 
-            packageStatusLabel = tk.Label(master=truckLF,text=f"{p.getStatus()}")
+            packageStatusLabel = tk.Label(master=truckLF,name=f"p{p.getID()}StatusLabel",text=f"{p.getStatus()}")
             packageStatusLabel.grid(column=2,row=idx+4)
     
     # Threads to start deliveries
@@ -62,6 +63,7 @@ def startGUI(truckList):
 
     # Update Button command
     controlBtn.config(command=lambda: control(controlBtn,thread1,thread2))
+    
     root.mainloop()
 
 # Main window

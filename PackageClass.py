@@ -90,7 +90,8 @@ class Package:
         if self.deliveredTime == None:
             returnedStatus = self.status
             return returnedStatus
-        returnedStatus = f"{self.status} at {datetime.datetime.strftime(self.deliveredTime, "%H:%M %p")}"
+        timestr = datetime.datetime.strftime(self.deliveredTime,"%H:%M %p")
+        returnedStatus = f"{self.status} at {timestr}"
         return returnedStatus
     
     def updateStatus(self, newStatus: str):

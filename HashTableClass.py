@@ -48,9 +48,8 @@ class HashTable:
     
     def searchPackage(self, key: int) -> Package | None:
         """ This function searches the hash table for a package given a key. The search performed is linear
-        and has a worst-case run time of *O*(*n*), *n* being the number of elements in the hash table. Returns the package if a matching key is found, otherwise
-        returns None.
-        numbered list
+        and has a worst-case run time of *O*(*n*), *n* being the number of elements in the hash table. 
+        Returns the package if a matching key is found, otherwise returns None.
         
         Args:
             key (int): The key of a package (Package ID).

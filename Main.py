@@ -1,3 +1,8 @@
+"""
+@author Axel Cornelly
+Student ID: 002555231
+Program Last Modified: 11/04/24
+"""
 import csv
 import threading
 from PackageClass import Package
@@ -158,7 +163,6 @@ def loadPackages(packageHashTable: HashTable, trucks: list[Truck]):
 
 if __name__ == "__main__":
     readPackages("WGUPS Package File.csv")
-    # packageHash.showContents()
     readDistances("WGUPS Distance Table.csv")
     
     t1 = Truck(1)
@@ -167,17 +171,5 @@ if __name__ == "__main__":
     truckList = [t1, t2, t3]
     loadPackages(packageHash, truckList)
     
-    # for t in truckList:
-    #     for p in t.packages:
-    #         print(f"Truck {t.getTruckID()}: {p.toString()}")
-        
-    #     print(f"Truck {t.getTruckID()} has: {len(t.packages)} packages.")
-
-    # thread1 = threading.Thread(target=deliverPackages, args=(truckList, t1, "08:00 AM"))
-    # thread2 = threading.Thread(target=deliverPackages, args=(truckList, t2, "08:00 AM"))
-
-    # thread1.start()
-    # thread2.start()
-
     startGUI(truckList)
     

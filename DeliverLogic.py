@@ -20,7 +20,15 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
     progress = 0.0 # Tracks Truck's travel distance in between stops
     currAddress = "HUB" # Initially set to HUB since all Trucks start there
     start_Time = datetime.datetime.strptime(startTime, "%H:%M %p").time()
+    
+    # GUI widgets to be updated throughout the program
     guiRoot = gui
+    truckWidget = guiRoot.nametowidget("truckTopLF").nametowidget(f"t{startTruck.getTruckID()}Label")
+    truckStatusWidget = truckWidget.nametowidget(f"t{startTruck.getTruckID()}StatusLabel")
+    truckMileageWidget = truckWidget.nametowidget(f"t{startTruck.getTruckID()}MileageLabel")
+    timeWidget = guiRoot.nametowidget("timeLF").nametowidget("timeVal")
+    totalDistWidget = guiRoot.nametowidget("totalDistLF").nametowidget("totalDistVal")
+    updatesWidget = guiRoot.nametowidget("updatesArea")
 
     while timer < 20000:
         # Check if program is paused
@@ -34,19 +42,28 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
 
         # Continuously update current time while program runs, incrementing minutes
         currentTime = datetime.datetime.combine(datetime.date.today(), start_Time) + datetime.timedelta(minutes=timer)
-        
+        # Update gui
+        timeWidget["text"] = datetime.datetime.strftime(currentTime,"%H:%M %p")
+        # Str variable to hold message time
+        msgTime = datetime.datetime.strftime(currentTime,"%H:%M %p")
+
         # When delayed packages arrive at 09:05 am, update statuses
         if currentTime.hour == 9 and currentTime.minute == 5:
             for p in trucks[2].packages:
                 if p.getStatus() == "Delayed":
                     p.updateStatus("On Truck")
+                    # Update gui
+                    guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")["text"] = "On Truck"
         
         # When 10:20am hits, update Package 9's address
         if currentTime.hour == 10 and currentTime.minute == 20:
             for p in trucks[2].packages:
                 if p.getID() == 9:
                     p.updateStatus("On Truck")
+                    guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p9StatusLabel")["text"] = "On Truck"
                     p.updateAddress("410 S State St", "Salt Lake City", "UT", "84111")
+                    updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package 9 address corrected to: {p.getAddress()}")
+                    updatesWidget.see(tk.END)
         
         # Truck Delivery Process
 
@@ -55,6 +72,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
         if startTruck.getTruckID() != 3 and startTruck.getTruckStatus() != "Finished Delivering":
             if startTruck.getTruckStatus() != "Heading back to Hub":
                 startTruck.setTruckStatus("Delivering")
+                truckStatusWidget["text"] = startTruck.getTruckStatus()
                 if len(startTruck.packages) != 0:
                     # Find next nearest address from current location
                     nextPkg = findNearestPkg(currAddress, startTruck.packages)
@@ -62,11 +80,11 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
 
                     # Head to address
                     if distToNext > 0:
-                        totalTravelDist += (18/60) # Increment travel distance. Truck travels at 18 mph
                         progress += (18/60) # Increment progress distance.
                         startTruck.mileage += (18/60) # Increment Truck's total mileage
-                        # print(f"Dist to Next: {round(distToNext, 2)} miles")
-                        # print(f"Progress: {round(progress, 2)} miles")
+                        truckMileageWidget["text"] = str(round(startTruck.mileage,2)) # Update gui
+                        totalTravelDist = (trucks[0].mileage + trucks[1].mileage + trucks[2].mileage)
+                        totalDistWidget["text"] = str(round(totalTravelDist,2)) # Update gui
 
                         # Deliver package(s) once arriving at destination
                         if progress >= distToNext:
@@ -84,7 +102,9 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                             for package in sharedAddr:
                                 package.updateStatus("Delivered")
                                 package.setDeliveredTime(currentTime)
-                                print(f"Truck {startTruck.getTruckID()} delivered Package {package.getID()} at {datetime.datetime.strftime(package.deliveredTime, "%H:%M %p")}. Deadline was {package.getDeadline()}")
+                                updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package {package.getID()} delivered. Deadline was {package.getDeadline()}")
+                                updatesWidget.see(tk.END)
+                                truckWidget.nametowidget(f"p{package.getID()}StatusLabel")["text"] = package.getStatus()
                                 startTruck.packages.remove(package)
                             
                             # Empty the sharedAddr list
@@ -92,36 +112,44 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                 
                 # If Truck package list is empty, deliveries complete, trigger return process.
                 if len(startTruck.packages) == 0: 
-                    # print(f"Truck {startTruck.getTruckID()} Empty!")
                     progress = 0
                     startTruck.setTruckStatus("Heading back to Hub")
+                    truckStatusWidget["text"] = startTruck.getTruckStatus()
             
             # Start heading back to the Hub
             if startTruck.getTruckStatus() == "Heading back to Hub":
                 distToNext = float(distBetween(currAddress, "HUB"))
                 if distToNext > 0:
-                    totalTravelDist += (18/60)
                     progress += (18/60)
                     startTruck.mileage += (18/60)
+                    truckMileageWidget["text"] = str(round(startTruck.mileage,2))
+                    totalTravelDist = (trucks[0].mileage + trucks[1].mileage + trucks[2].mileage)
+                    totalDistWidget["text"] = str(round(totalTravelDist,2)) # Update gui
 
                     # Once returned, put Truck out of commission, start Truck 3
                     if progress >= distToNext:
                         progress = 0
                         currAddress = "HUB"
-                        print(f"Truck {startTruck.getTruckID()} returned to Hub @ {datetime.datetime.strftime(currentTime, "%H:%M %p")}")
+                        updatesWidget.insert(tk.END,f"\n[{msgTime}]: Truck {startTruck.getTruckID()} returned to HUB.")
+                        updatesWidget.see(tk.END)
                         startTruck.setTruckStatus("Finished Delivering")
-                        print(f"Truck {startTruck.getTruckID()} {startTruck.getTruckStatus()}")
+                        truckStatusWidget["text"] = startTruck.getTruckStatus()
+                        
+                        if startTruck.getTruckID() == 2: # Ends the thread that starts with truck 2 because we know it finishes after Truck 1
+                            break
+                        
                         if trucks[2].getTruckStatus() == "At Hub":
                             trucks[2].setTruckStatus("Delivering")
                             startTruck = trucks[2]
-                            print(f"startTruck is now Truck {startTruck.getTruckID()}")
+                            # Update widgets
+                            truckWidget = guiRoot.nametowidget("truckTopLF").nametowidget(f"t{startTruck.getTruckID()}Label")
+                            truckStatusWidget = truckWidget.nametowidget(f"t{startTruck.getTruckID()}StatusLabel")
+                            truckMileageWidget = truckWidget.nametowidget(f"t{startTruck.getTruckID()}MileageLabel")
+                            truckStatusWidget["text"] = startTruck.getTruckStatus()
         
         # Logic for Truck 3 to start delivering. Delivers urgent packages first
         if startTruck.getTruckID() == 3 and startTruck.getTruckStatus() != "Finished Delivering":
             if startTruck.getTruckStatus() != "Heading back to Hub":
-                # Update Truck status
-                startTruck.setTruckStatus("Delivering")
-                
                 if len(startTruck.packages) != 0:
                     # List to hold any urgent packages
                     urgentPkgs = []
@@ -137,9 +165,11 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                         distToNext = float(distBetween(currAddress, nearestUrgent.getAddress()))
 
                         if distToNext > 0:
-                            totalTravelDist += (18/60) # Increment total travel
-                            progress += (18/60) # Increment Truck progress
-                            startTruck.mileage += (18/60) # Increment Truck mileage
+                            progress += (18/60)
+                            startTruck.mileage += (18/60)
+                            truckMileageWidget["text"] = str(round(startTruck.mileage,2))
+                            totalTravelDist = (trucks[0].mileage + trucks[1].mileage + trucks[2].mileage)
+                            totalDistWidget["text"] = str(round(totalTravelDist,2)) # Update gui
 
                             if progress >= distToNext:
                                 progress = 0
@@ -150,7 +180,9 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                     if package.getAddress() == currAddress:
                                         package.updateStatus("Delivered")
                                         package.setDeliveredTime(currentTime)
-                                        print(f"Truck {startTruck.getTruckID()} delivered Package {package.getID()} at {datetime.datetime.strftime(package.deliveredTime, "%H:%M %p")}. Deadline was {package.getDeadline()}")
+                                        truckWidget.nametowidget(f"p{package.getID()}StatusLabel")["text"] = package.getStatus()
+                                        updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package {package.getID()} delivered. Deadline was {package.getDeadline()}")
+                                        updatesWidget.see(tk.END)
                                         urgentPkgs.remove(package)
                                         startTruck.packages.remove(package)
                     
@@ -159,11 +191,11 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                     distToNext = float(distBetween(currAddress, nearestPkg.getAddress()))
                     
                     if distToNext > 0:
-                        totalTravelDist += (18/60) # Increment travel distance. Truck travels at 18 mph
-                        progress += (18/60) # Increment progress distance.
-                        startTruck.mileage += (18/60) # Increment Truck's total mileage
-                        # print(f"Dist to Next: {round(distToNext, 2)} miles")
-                        # print(f"Progress: {round(progress, 2)} miles")
+                        progress += (18/60)
+                        startTruck.mileage += (18/60)
+                        truckMileageWidget["text"] = str(round(startTruck.mileage,2))
+                        totalTravelDist = (trucks[0].mileage + trucks[1].mileage + trucks[2].mileage)
+                        totalDistWidget["text"] = str(round(totalTravelDist,2)) # Update gui
 
                         # Deliver package(s) once arriving at destination
                         if progress >= distToNext:
@@ -183,39 +215,46 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                 for package in sharedAddr:
                                     package.updateStatus("Delivered")
                                     package.setDeliveredTime(currentTime)
-                                    print(f"Truck {startTruck.getTruckID()} delivered Package {package.getID()} at {datetime.datetime.strftime(package.deliveredTime, "%H:%M %p")}. Deadline was {package.getDeadline()}")
+                                    truckWidget.nametowidget(f"p{package.getID()}StatusLabel")["text"] = package.getStatus()
+                                    updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package {package.getID()} delivered. Deadline was {package.getDeadline()}")
+                                    updatesWidget.see(tk.END)
                                     startTruck.packages.remove(package)
                                 
                                 # Empty sharedAddr list
                                 sharedAddr = []
             
                 # If Truck package list is empty, deliveries complete, trigger return process.
-                if len(startTruck.packages) == 0: 
-                    # print(f"Truck {startTruck.getTruckID()} Empty!")
+                if len(startTruck.packages) == 0:
                     progress = 0
                     startTruck.setTruckStatus("Heading back to Hub")
+                    truckStatusWidget["text"] = startTruck.getTruckStatus()
 
             # Start heading back to the Hub
             if startTruck.getTruckStatus() == "Heading back to Hub":
                 distToNext = float(distBetween(currAddress, "HUB"))
                 if distToNext > 0:
-                    totalTravelDist += (18/60)
                     progress += (18/60)
                     startTruck.mileage += (18/60)
+                    truckMileageWidget["text"] = str(round(startTruck.mileage,2))
+                    totalTravelDist = (trucks[0].mileage + trucks[1].mileage + trucks[2].mileage)
+                    totalDistWidget["text"] = str(round(totalTravelDist,2)) # Update gui
 
                     # Once returned, put Truck out of commission
                     if progress >= distToNext:
                         progress = 0
                         currAddress = "HUB"
-                        print(f"Truck {startTruck.getTruckID()} returned to Hub @ {datetime.datetime.strftime(currentTime, "%H:%M %p")}")
+                        updatesWidget.insert(tk.END,f"\n[{msgTime}]: Truck {startTruck.getTruckID()} returned to HUB.")
+                        updatesWidget.see(tk.END)
                         startTruck.setTruckStatus("Finished Delivering")
-                        print(f"Truck {startTruck.getTruckID()} {startTruck.getTruckStatus()}")
+                        truckStatusWidget["text"] = startTruck.getTruckStatus()
         
         # If all Trucks are done delivering, end program
         if all(truck.getTruckStatus() == "Finished Delivering" for truck in trucks):
-            # Do end-of-program stuff:
-            # total all trucks distance traveled
-            # close program
+            # Perform end-program tasks
+            totalTravelDist = trucks[0].mileage + trucks[1].mileage + trucks[2].mileage
+            totalDistWidget["text"] = round(totalTravelDist,2)
+            updatesWidget.insert(tk.END,"\n=== Deliveries Complete ===")
+            guiRoot.nametowidget("controlBtn")["text"] = "Exit"
             break
 
 
