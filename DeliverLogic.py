@@ -27,6 +27,9 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
     truckStatusWidget = truckWidget.nametowidget(f"t{startTruck.getTruckID()}StatusLabel")
     truckMileageWidget = truckWidget.nametowidget(f"t{startTruck.getTruckID()}MileageLabel")
     timeWidget = guiRoot.nametowidget("timeLF").nametowidget("timeVal")
+    timeSearchEntryWidget = guiRoot.nametowidget("timeViewLF").nametowidget("timeViewEntry")
+    timeSearchBtnWidget = guiRoot.nametowidget("timeViewLF").nametowidget("timeViewBtn")
+    timeSearchLabel = guiRoot.nametowidget("timeViewLF").nametowidget("timeViewInfoLabel")
     totalDistWidget = guiRoot.nametowidget("totalDistLF").nametowidget("totalDistVal")
     updatesWidget = guiRoot.nametowidget("updatesArea")
 
@@ -255,6 +258,11 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
             totalDistWidget["text"] = round(totalTravelDist,2)
             updatesWidget.insert(tk.END,"\n=== Deliveries Complete ===")
             guiRoot.nametowidget("controlBtn")["text"] = "Exit"
+            
+            # Enable function to enter in a time to see package statuses
+            timeSearchEntryWidget.config(state="normal") # enable entry field
+            timeSearchBtnWidget.config(state="normal") # enable button
+            timeSearchLabel.grid_forget() # hide disabled text
             break
 
 
