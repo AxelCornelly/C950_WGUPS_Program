@@ -2,7 +2,7 @@ import tkinter as tk
 import tkinter.ttk as ttk
 import threading
 import datetime
-from DeliverLogic import deliverPackages
+from DeliverLogic import deliverPackages, getUIState
 
 def control(btn,thread1,thread2):
     if btn["text"] == "Start" or btn["text"] == "Resume":
@@ -48,24 +48,48 @@ def clearEntry(event):
     if event.widget.get():
         event.widget.delete(0,tk.END)
 
+def checkPackageStatus():
+    timeToSearch = timeViewEntry.get().casefold()
+    uiState = getUIState(timeToSearch)
+    
+    for k,v in uiState.items():
+        for tlf in truckTopLF.winfo_children():
+            if k in tlf.winfo_children():
+                widgetToUpd = truckTopLF.nametowidget(k)
+                widgetToUpd["text"] = v
+    root.update()
+
+        
+
 def handleTimeViewBtn():
     # Switch focus to button widget
     timeViewBtn.focus()
 
+    # Clear any previous search/highlights
+    updatesArea.tag_remove("highlight","0.0",tk.END)
+    
     # Store user's input
-    timeInput = timeViewEntry.get().capitalize()
+    timeInput = timeViewEntry.get().casefold()
 
     # Validate user input by attempting to format the entry as a datetime
     try:
         # This block will execute if the input is a valid time value
         validTimeInput = datetime.datetime.strptime(timeInput,"%H:%M %p")
-        # Search for string
-        timeLoc = updatesArea.search(timeInput,"0.0",tk.END,exact=False,nocase=True)
-        # Create highlight tag and apply it to all occurences
+        # Create highlight tag which will be applied to all occurences
         updatesArea.tag_config("highlight",background="yellow", foreground="black")
         
+        # Search for packages with matching time
+        numLines = int(updatesArea.index(tk.END).split(".")[0]) # E.g output of .index() can be "4.5" so splitting at the decimal gives us [4,5] 
+                                                                # where 0th index is our number of lines 
+        startIdx = updatesArea.search(timeInput,"0.0",tk.END,exact=False,nocase=True)
+        for i in range(numLines-1):
+            foundIdx = updatesArea.search(timeInput,f"{startIdx}+{i}l",f"{startIdx}+{i}l+{len(timeInput)+1}c",exact=False,nocase=True)
+
+            # Apply highlight
+            if foundIdx != "":
+                updatesArea.tag_add("highlight",f"{foundIdx}-{1}c",f"{foundIdx}+{len(timeInput)+1}c")
         
-        updatesArea.see(timeLoc)
+        updatesArea.see(startIdx)
         timeViewInfoLabel.grid_forget()
     except Exception as e:
         # This block will execute if the input is not valid i.e not entering in a time
@@ -125,6 +149,7 @@ def startGUI(truckList):
 
             packageStatusLabel = tk.Label(master=truckLF,name=f"p{p.getID()}StatusLabel",text=f"{p.getStatus()}")
             packageStatusLabel.grid(column=2,row=idx+4)
+            
     
     # Threads to start deliveries
     thread1 = threading.Thread(target=deliverPackages,args=(root,truckList,truckList[0],"08:00 AM"))
@@ -188,7 +213,7 @@ totalDistVal = tk.Label(master=totalDistLF,text="0.0 Miles",name="totalDistVal",
 totalDistVal.grid(column=0,row=0)
 
 # Time Selector Widget
-timeViewLF = tk.LabelFrame(master=root,text="View package statuses \nat a specific time",name="timeViewLF",background="light gray",relief=tk.RAISED)
+timeViewLF = tk.LabelFrame(master=root,text="View package statuses \nat a specific time",name="timeViewLF",background="light gray",relief=tk.RAISED,labelanchor="n")
 timeViewLF.grid(column=4,row=2,pady=10)
 
 timeViewEntry = tk.Entry(master=timeViewLF,name="timeViewEntry",justify="center",relief=tk.SUNKEN)
@@ -197,7 +222,7 @@ timeViewEntry.bind("<Return>",handleEnterKey)
 timeViewEntry.grid(column=0,row=0,sticky="ew",padx=3)
 
 # Button widget to submit time entry
-timeViewBtn = tk.Button(master=timeViewLF,name="timeViewBtn",text="View Packages",relief=tk.RAISED,command=lambda: handleTimeViewBtn())
+timeViewBtn = tk.Button(master=timeViewLF,name="timeViewBtn",text="View Packages",relief=tk.RAISED,command=lambda: checkPackageStatus())
 timeViewBtn.grid(column=0,row=1,sticky="ew",padx=3,pady=3)
 
 # Label widget to inform user about time lookup

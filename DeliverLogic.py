@@ -5,6 +5,22 @@ import tkinter as tk
 from TruckClass import Truck
 from PackageClass import Package
 
+def getUIState(time) -> dict:
+    return uiLog[time]
+
+def logUIState(time, widget):
+    # Update time variable to be a readable string without case
+    ezTime = time.casefold()
+    
+    # First check if there is an existing entry for the given time
+    if ezTime in uiLog.keys():
+        uiLog[ezTime].update({ # If so, update that time's inner dictionary by adding another key-value pair 
+            widget.winfo_name(): widget["text"]
+        })
+    else: # If not found, add entry for given time along with its inner dictionary
+        uiLog[ezTime] = {widget.winfo_name(): widget["text"]}
+    
+
 def deliverPackages(gui, trucks, startTruck: Truck, startTime):
     """ Initiates the delivery of packages for a given truck.
     
@@ -21,6 +37,10 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
     currAddress = "HUB" # Initially set to HUB since all Trucks start there
     start_Time = datetime.datetime.strptime(startTime, "%H:%M %p").time()
     
+    # Global variable to log UI states
+    global uiLog
+    uiLog = {}
+
     # GUI widgets to be updated throughout the program
     guiRoot = gui
     truckWidget = guiRoot.nametowidget("truckTopLF").nametowidget(f"t{startTruck.getTruckID()}Label")
@@ -56,14 +76,20 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                 if p.getStatus() == "Delayed":
                     p.updateStatus("On Truck")
                     # Update gui
-                    guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")["text"] = "On Truck"
+                    packageWidget = guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")
+                    packageWidget["text"] = "On Truck"
+                    # Log UI state
+                    logUIState(msgTime,packageWidget)
         
         # When 10:20am hits, update Package 9's address
         if currentTime.hour == 10 and currentTime.minute == 20:
             for p in trucks[2].packages:
                 if p.getID() == 9:
                     p.updateStatus("On Truck")
-                    guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p9StatusLabel")["text"] = "On Truck"
+                    packageWidget = guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")
+                    packageWidget["text"] = "On Truck"
+                    # Log UI state
+                    logUIState(msgTime,packageWidget)
                     p.updateAddress("410 S State St", "Salt Lake City", "UT", "84111")
                     updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package 9 address corrected to: {p.getAddress()}")
                     updatesWidget.see(tk.END)
@@ -107,7 +133,10 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                 package.setDeliveredTime(currentTime)
                                 updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package {package.getID()} delivered. Deadline was {package.getDeadline()}")
                                 updatesWidget.see(tk.END)
-                                truckWidget.nametowidget(f"p{package.getID()}StatusLabel")["text"] = package.getStatus()
+                                packageWidget = truckWidget.nametowidget(f"p{package.getID()}StatusLabel")
+                                packageWidget["text"] = package.getStatus()
+                                # Log UI state
+                                logUIState(msgTime,packageWidget)
                                 startTruck.packages.remove(package)
                             
                             # Empty the sharedAddr list
@@ -183,7 +212,10 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                     if package.getAddress() == currAddress:
                                         package.updateStatus("Delivered")
                                         package.setDeliveredTime(currentTime)
-                                        truckWidget.nametowidget(f"p{package.getID()}StatusLabel")["text"] = package.getStatus()
+                                        packageWidget = truckWidget.nametowidget(f"p{package.getID()}StatusLabel")
+                                        packageWidget["text"] = package.getStatus()
+                                        # Log UI state
+                                        logUIState(msgTime,packageWidget)
                                         updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package {package.getID()} delivered. Deadline was {package.getDeadline()}")
                                         updatesWidget.see(tk.END)
                                         urgentPkgs.remove(package)
@@ -218,7 +250,10 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                 for package in sharedAddr:
                                     package.updateStatus("Delivered")
                                     package.setDeliveredTime(currentTime)
-                                    truckWidget.nametowidget(f"p{package.getID()}StatusLabel")["text"] = package.getStatus()
+                                    packageWidget = truckWidget.nametowidget(f"p{package.getID()}StatusLabel")
+                                    packageWidget["text"] = package.getStatus()
+                                    # Log UI state
+                                    logUIState(msgTime,packageWidget)
                                     updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package {package.getID()} delivered. Deadline was {package.getDeadline()}")
                                     updatesWidget.see(tk.END)
                                     startTruck.packages.remove(package)
@@ -257,6 +292,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
             totalTravelDist = trucks[0].mileage + trucks[1].mileage + trucks[2].mileage
             totalDistWidget["text"] = round(totalTravelDist,2)
             updatesWidget.insert(tk.END,"\n=== Deliveries Complete ===")
+            updatesWidget.see(tk.END)
             guiRoot.nametowidget("controlBtn")["text"] = "Exit"
             
             # Enable function to enter in a time to see package statuses
