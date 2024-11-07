@@ -53,7 +53,7 @@ def handleTimeViewBtn():
     timeViewBtn.focus()
 
     # Store user's input
-    timeInput = timeViewEntry.get()
+    timeInput = timeViewEntry.get().capitalize()
 
     # Validate user input by attempting to format the entry as a datetime
     try:
@@ -61,6 +61,10 @@ def handleTimeViewBtn():
         validTimeInput = datetime.datetime.strptime(timeInput,"%H:%M %p")
         # Search for string
         timeLoc = updatesArea.search(timeInput,"0.0",tk.END,exact=False,nocase=True)
+        # Create highlight tag and apply it to all occurences
+        updatesArea.tag_config("highlight",background="yellow", foreground="black")
+        
+        
         updatesArea.see(timeLoc)
         timeViewInfoLabel.grid_forget()
     except Exception as e:
