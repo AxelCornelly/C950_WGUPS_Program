@@ -52,12 +52,8 @@ def checkPackageStatus():
     timeToSearch = timeViewEntry.get().casefold()
     uiState = getUIState(timeToSearch)
     
-    for k,v in uiState.items():
-        for tlf in truckTopLF.winfo_children():
-            if k in tlf.winfo_children():
-                widgetToUpd = truckTopLF.nametowidget(k)
-                widgetToUpd["text"] = v
-    root.update()
+    # TO DO
+    truckTopLF.destroy()
 
         
 

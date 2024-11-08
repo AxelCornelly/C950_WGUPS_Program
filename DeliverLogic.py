@@ -5,20 +5,19 @@ import tkinter as tk
 from TruckClass import Truck
 from PackageClass import Package
 
-def getUIState(time) -> dict:
+def getUIState(time):
     return uiLog[time]
 
-def logUIState(time, widget):
+def logUIState(time, uiRoot):
     # Update time variable to be a readable string without case
     ezTime = time.casefold()
     
-    # First check if there is an existing entry for the given time
-    if ezTime in uiLog.keys():
-        uiLog[ezTime].update({ # If so, update that time's inner dictionary by adding another key-value pair 
-            widget.winfo_name(): widget["text"]
-        })
-    else: # If not found, add entry for given time along with its inner dictionary
-        uiLog[ezTime] = {widget.winfo_name(): widget["text"]}
+    # Grab a snapshot of every package's status throughout every truck
+    trucksFrame = uiRoot.nametowidget("truckTopLF")
+    
+    uiLog.update({
+        ezTime: trucksFrame
+    })
     
 
 def deliverPackages(gui, trucks, startTruck: Truck, startTime):
@@ -79,7 +78,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                     packageWidget = guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")
                     packageWidget["text"] = "On Truck"
                     # Log UI state
-                    logUIState(msgTime,packageWidget)
+                    logUIState(msgTime,guiRoot)
         
         # When 10:20am hits, update Package 9's address
         if currentTime.hour == 10 and currentTime.minute == 20:
@@ -89,7 +88,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                     packageWidget = guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")
                     packageWidget["text"] = "On Truck"
                     # Log UI state
-                    logUIState(msgTime,packageWidget)
+                    logUIState(msgTime,guiRoot)
                     p.updateAddress("410 S State St", "Salt Lake City", "UT", "84111")
                     updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package 9 address corrected to: {p.getAddress()}")
                     updatesWidget.see(tk.END)
@@ -136,7 +135,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                 packageWidget = truckWidget.nametowidget(f"p{package.getID()}StatusLabel")
                                 packageWidget["text"] = package.getStatus()
                                 # Log UI state
-                                logUIState(msgTime,packageWidget)
+                                logUIState(msgTime,guiRoot)
                                 startTruck.packages.remove(package)
                             
                             # Empty the sharedAddr list
@@ -215,7 +214,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                         packageWidget = truckWidget.nametowidget(f"p{package.getID()}StatusLabel")
                                         packageWidget["text"] = package.getStatus()
                                         # Log UI state
-                                        logUIState(msgTime,packageWidget)
+                                        logUIState(msgTime,guiRoot)
                                         updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package {package.getID()} delivered. Deadline was {package.getDeadline()}")
                                         updatesWidget.see(tk.END)
                                         urgentPkgs.remove(package)
@@ -253,7 +252,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                     packageWidget = truckWidget.nametowidget(f"p{package.getID()}StatusLabel")
                                     packageWidget["text"] = package.getStatus()
                                     # Log UI state
-                                    logUIState(msgTime,packageWidget)
+                                    logUIState(msgTime,guiRoot)
                                     updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package {package.getID()} delivered. Deadline was {package.getDeadline()}")
                                     updatesWidget.see(tk.END)
                                     startTruck.packages.remove(package)
