@@ -49,13 +49,17 @@ def clearEntry(event):
         event.widget.delete(0,tk.END)
 
 def checkPackageStatus():
-    timeToSearch = timeViewEntry.get().casefold()
-    uiState = getUIState(timeToSearch)
+    timeToSearch = timeViewEntry.get().casefold() # User inputted time
+    uiState = getUIState(timeToSearch) # Dictionary of package status labels and their values
     
-    # TO DO
-    truckTopLF.destroy()
-
-        
+    # Update UI
+    truckTopLF.config(text=f"Viewing Package Statuses From {timeToSearch}",background="light yellow")
+    truckWidgets = truckTopLF.winfo_children()
+    for truckW in truckWidgets:
+        for childW in truckW.winfo_children():
+            if childW.winfo_name() in uiState.keys():
+                childW.configure(text=f"{uiState[childW.winfo_name()]}") # type: ignore
+                # TODO
 
 def handleTimeViewBtn():
     # Switch focus to button widget
@@ -139,12 +143,16 @@ def startGUI(truckList):
         
         # Populate the Truck's container with its Packages and their info
         for idx, p in enumerate(truck.packages):
+            global pkgStatusLabelNames
+            pkgStatusLabelNames = {}
             
             packageLabel = tk.Label(master=truckLF,name=f"p{p.getID()}Label",text=f"Package {p.getID()}")
             packageLabel.grid(column=0,row=idx+4)
 
             packageStatusLabel = tk.Label(master=truckLF,name=f"p{p.getID()}StatusLabel",text=f"{p.getStatus()}")
             packageStatusLabel.grid(column=2,row=idx+4)
+            
+            pkgStatusLabelNames.update({packageStatusLabel.winfo_name(): packageStatusLabel})
             
     
     # Threads to start deliveries

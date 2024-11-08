@@ -6,18 +6,28 @@ from TruckClass import Truck
 from PackageClass import Package
 
 def getUIState(time):
+    print(uiLog[time])
     return uiLog[time]
 
-def logUIState(time, uiRoot):
+def logUIState(time, pkgWidget):
     # Update time variable to be a readable string without case
     ezTime = time.casefold()
     
-    # Grab a snapshot of every package's status throughout every truck
-    trucksFrame = uiRoot.nametowidget("truckTopLF")
-    
-    uiLog.update({
-        ezTime: trucksFrame
-    })
+    # Package Widget info
+    pWidgetName = pkgWidget.winfo_name()
+    pWidgetText = pkgWidget["text"]
+
+    # Check if time entry already exists, if so, update that package status in that entry
+    if ezTime in uiLog.keys():
+        uiLog[ezTime][pWidgetName] = pWidgetText
+    else:
+        # Copy previous state
+        prevState = list(uiLog.values())[-1] # turns .values() view-object into a list, then grab the last item
+        
+        # Create new entry, update status(es), and add to uiLog
+        newEntry = {ezTime: prevState}
+        newEntry[ezTime][pWidgetName] = pWidgetText
+        uiLog.update(newEntry)
     
 
 def deliverPackages(gui, trucks, startTruck: Truck, startTime):
@@ -35,10 +45,6 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
     progress = 0.0 # Tracks Truck's travel distance in between stops
     currAddress = "HUB" # Initially set to HUB since all Trucks start there
     start_Time = datetime.datetime.strptime(startTime, "%H:%M %p").time()
-    
-    # Global variable to log UI states
-    global uiLog
-    uiLog = {}
 
     # GUI widgets to be updated throughout the program
     guiRoot = gui
@@ -51,6 +57,18 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
     timeSearchLabel = guiRoot.nametowidget("timeViewLF").nametowidget("timeViewInfoLabel")
     totalDistWidget = guiRoot.nametowidget("totalDistLF").nametowidget("totalDistVal")
     updatesWidget = guiRoot.nametowidget("updatesArea")
+
+    # Global variable to log UI states
+    global uiLog
+    uiLog = {"08:00 am": {}} # Nested dictionaries
+
+    # Enter uiLog's first state a.k.a default
+    for truck in trucks:
+        tWidget = guiRoot.nametowidget("truckTopLF").nametowidget(f"t{truck.getTruckID()}Label")
+        for package in truck.packages:
+            pkgStatusWidget = tWidget.nametowidget(f"p{package.getID()}StatusLabel")
+            pkgEntry = {pkgStatusWidget.winfo_name(): package.getStatus()}
+            uiLog["08:00 am"].update(pkgEntry)
 
     while timer < 20000:
         # Check if program is paused
@@ -78,7 +96,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                     packageWidget = guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")
                     packageWidget["text"] = "On Truck"
                     # Log UI state
-                    logUIState(msgTime,guiRoot)
+                    logUIState(msgTime,packageWidget)
         
         # When 10:20am hits, update Package 9's address
         if currentTime.hour == 10 and currentTime.minute == 20:
@@ -88,7 +106,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                     packageWidget = guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")
                     packageWidget["text"] = "On Truck"
                     # Log UI state
-                    logUIState(msgTime,guiRoot)
+                    logUIState(msgTime,packageWidget)
                     p.updateAddress("410 S State St", "Salt Lake City", "UT", "84111")
                     updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package 9 address corrected to: {p.getAddress()}")
                     updatesWidget.see(tk.END)
@@ -135,7 +153,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                 packageWidget = truckWidget.nametowidget(f"p{package.getID()}StatusLabel")
                                 packageWidget["text"] = package.getStatus()
                                 # Log UI state
-                                logUIState(msgTime,guiRoot)
+                                logUIState(msgTime,packageWidget)
                                 startTruck.packages.remove(package)
                             
                             # Empty the sharedAddr list
@@ -214,7 +232,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                         packageWidget = truckWidget.nametowidget(f"p{package.getID()}StatusLabel")
                                         packageWidget["text"] = package.getStatus()
                                         # Log UI state
-                                        logUIState(msgTime,guiRoot)
+                                        logUIState(msgTime,packageWidget)
                                         updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package {package.getID()} delivered. Deadline was {package.getDeadline()}")
                                         updatesWidget.see(tk.END)
                                         urgentPkgs.remove(package)
@@ -252,7 +270,7 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                                     packageWidget = truckWidget.nametowidget(f"p{package.getID()}StatusLabel")
                                     packageWidget["text"] = package.getStatus()
                                     # Log UI state
-                                    logUIState(msgTime,guiRoot)
+                                    logUIState(msgTime,packageWidget)
                                     updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package {package.getID()} delivered. Deadline was {package.getDeadline()}")
                                     updatesWidget.see(tk.END)
                                     startTruck.packages.remove(package)
