@@ -59,7 +59,7 @@ def checkPackageStatus():
         for childW in truckW.winfo_children():
             if childW.winfo_name() in uiState.keys():
                 childW.configure(text=f"{uiState[childW.winfo_name()]}") # type: ignore
-                # TODO
+                
 
 def handleTimeViewBtn():
     # Switch focus to button widget

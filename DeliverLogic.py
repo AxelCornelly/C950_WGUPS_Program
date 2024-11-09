@@ -9,6 +9,15 @@ def getUIState(time):
     print(uiLog[time])
     return uiLog[time]
 
+def deepCopy(dictToCopy):
+    copiedDict = {}
+    for k,v in dictToCopy.items():
+        if isinstance(v,dict):
+            copiedDict[k] = deepCopy(v)
+        else:
+            copiedDict[k] = v
+    return copiedDict
+
 def logUIState(time, pkgWidget):
     # Update time variable to be a readable string without case
     ezTime = time.casefold()
@@ -21,11 +30,14 @@ def logUIState(time, pkgWidget):
     if ezTime in uiLog.keys():
         uiLog[ezTime][pWidgetName] = pWidgetText
     else:
-        # Copy previous state
+        # Copy previous state's dictionary
         prevState = list(uiLog.values())[-1] # turns .values() view-object into a list, then grab the last item
+
+        # Perform a deep copy
+        newState = deepCopy(prevState)
         
         # Create new entry, update status(es), and add to uiLog
-        newEntry = {ezTime: prevState}
+        newEntry = {ezTime: newState}
         newEntry[ezTime][pWidgetName] = pWidgetText
         uiLog.update(newEntry)
     
