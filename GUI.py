@@ -11,8 +11,10 @@ def control(btn,thread1,thread2):
             thread1.start()
             thread2.start()
         elif btn["text"] == "Resume":
-            # Disable our time searching functions
+            # Disable our time searching functions and reset the statuses if needed
             disableTimeSearch()
+            if truckTopLF.cget("text") != "Trucks":
+                resetStatusView()
         btn["text"] = "Pause"
     elif btn["text"] == "Pause":
         # Enable our time searching functions
@@ -43,14 +45,18 @@ def disableTimeSearch():
     timeViewEntry.config(state="readonly")
     timeViewInfoLabel.config(text="Unable to search while \nprogram is running.")
     timeViewInfoLabel.grid(column=0,row=2)
+    resetStatusViewBtn.grid_forget()
 
 def clearEntry(event):
     if event.widget.get():
         event.widget.delete(0,tk.END)
 
 def checkPackageStatus():
+    # change focus to button widget
+    timeViewBtn.focus()
+
     timeToSearch = timeViewEntry.get().casefold() # User inputted time
-    uiState = getUIState(timeToSearch) # Dictionary of package status labels and their values
+    uiState = getUIState(timeToSearch) # Key and dictionary of logged time (or closest entry)
     
     # Update UI
     truckTopLF.config(text=f"Viewing Package Statuses From {timeToSearch}",background="light yellow")
@@ -59,7 +65,21 @@ def checkPackageStatus():
         for childW in truckW.winfo_children():
             if childW.winfo_name() in uiState.keys():
                 childW.configure(text=f"{uiState[childW.winfo_name()]}") # type: ignore
-                
+    # Show and enable reset button
+    resetStatusViewBtn.grid(column=0,row=2,sticky="ew",padx=3,pady=3)
+
+def resetStatusView():
+    currentState = getUIState(timeVal["text"].casefold()) # get current program time's most recent UI log
+
+    # Restore UI
+    truckTopLF.config(text="Trucks",background="light gray")
+    truckWidgets = truckTopLF.winfo_children()
+    for truckW in truckWidgets:
+        for childW in truckW.winfo_children():
+            if childW.winfo_name() in currentState.keys():
+                childW.configure(text=f"{currentState[childW.winfo_name()]}") # type: ignore
+
+    resetStatusViewBtn.grid_forget() 
 
 def handleTimeViewBtn():
     # Switch focus to button widget
@@ -97,15 +117,7 @@ def handleTimeViewBtn():
         timeViewInfoLabel.grid(column=0,row=2)
 
 def handleEnterKey(event):
-    timeInput = event.widget.get()
-
-    try:
-        validTimeInput = datetime.datetime.strptime(timeInput,"%H:%M %p")
-        timeLoc = updatesArea.search(timeInput,"0.0",tk.END,exact=False,nocase=True)
-        updatesArea.see(timeLoc)
-        print("valid")
-    except Exception as e:
-        print("nope")
+    checkPackageStatus()
 
 def startGUI(truckList):
     """ This method builds and starts the GUI portion of the program.
@@ -229,13 +241,17 @@ timeViewEntry.grid(column=0,row=0,sticky="ew",padx=3)
 timeViewBtn = tk.Button(master=timeViewLF,name="timeViewBtn",text="View Packages",relief=tk.RAISED,command=lambda: checkPackageStatus())
 timeViewBtn.grid(column=0,row=1,sticky="ew",padx=3,pady=3)
 
+# Button widget to reset time search
+resetStatusViewBtn = tk.Button(master=timeViewLF,name="resetStatusViewBtn",text="Restore\nStatuses",relief=tk.RAISED,command=lambda: resetStatusView())
+resetStatusViewBtn.grid(column=0,row=2,sticky="ew",padx=3,pady=3)
+
 # Label widget to inform user about time lookup
 timeViewInfoLabel = tk.Label(master=timeViewLF,
                              name="timeViewInfoLabel",
                              text="Unable to search.\nProgram not started.",
                              justify="center",
                              font=("italicized", 10),bg="light gray",fg="red")
-timeViewInfoLabel.grid(column=0,row=2)
+timeViewInfoLabel.grid(column=0,row=3)
 
 # Interactive button to Start/Stop/Resume program
 controlBtn = tk.Button(master=root,

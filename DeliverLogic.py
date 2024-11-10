@@ -6,16 +6,35 @@ from TruckClass import Truck
 from PackageClass import Package
 
 def getUIState(time):
-    print(uiLog[time])
-    return uiLog[time]
-
+    # take time input and check if a log entry exists for it
+    # otherwise, return the next nearest entry before the given time
+    try:
+        return uiLog[time]
+    except KeyError as e:
+        # Convert to time object for easy comparison
+        searchTime = datetime.datetime.strptime(time,"%H:%M %p").time()
+        priorEntry = datetime.datetime.now()
+        
+        # Loop through log entries, turning the key into a time object
+        for entry in list(uiLog.keys()):
+            currEntry = datetime.datetime.strptime(entry,"%H:%M %p")
+            if currEntry.time() < searchTime:
+                priorEntry = currEntry
+            elif(currEntry.time() > searchTime):
+                break
+        priorEntryKey = datetime.datetime.strftime(priorEntry,"%H:%M %p")
+        return uiLog[priorEntryKey.casefold()]
+            
 def deepCopy(dictToCopy):
-    copiedDict = {}
-    for k,v in dictToCopy.items():
-        if isinstance(v,dict):
-            copiedDict[k] = deepCopy(v)
+    """ 
+    Helper function to create a deep copy of a dictionary recursively.
+    """
+    copiedDict = {} # Store end result
+    for k,v in dictToCopy.items(): # For every key-value pair in the original dictionary
+        if isinstance(v,dict): # If the value is a dictionary,
+            copiedDict[k] = deepCopy(v) # recursive call
         else:
-            copiedDict[k] = v
+            copiedDict[k] = v # Otherwise, copy over key-value pair normally
     return copiedDict
 
 def logUIState(time, pkgWidget):
