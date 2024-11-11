@@ -179,7 +179,7 @@ def startGUI(truckList):
     
     root.mainloop()
 
-# Main window
+# Root
 root = tk.Tk()
 root.title("WGUPS Delivery Program")
 root.geometry("1014x900")
@@ -187,17 +187,20 @@ root.configure(bg="dark gray")
 root.columnconfigure(0,weight=1)
 root.rowconfigure(0,weight=1)
 
-"""
-     Cols    0          1              2              3                  4
-Rows   0  [                  truckTopLF(0,0), span 5 col                        ]
-       1
-       2       [controlBtn(1,2)][timeLF(2,2)][totalDistLF(3,2)] [timeViewLF(4,2)]
-       3       [      updatesArea(1,3), span 3 col    ]         [scrollbar (4,3)]
-       4
-"""
+# Notebook widget to hold different views
+rootNB = ttk.Notebook(master=root)
+mainPage = tk.Frame(master=rootNB,name="mainPage")
+timeLookupView = tk.Frame(master=rootNB,name="timeLookupView")
+rootNB.add(mainPage,text="Home")
+rootNB.add(timeLookupView,text="Time Lookup")
+rootNB.grid(column=0,row=0,sticky="nsew")
+mainPage.columnconfigure(0,weight=1)
+mainPage.rowconfigure(0,weight=1)
+timeLookupView.columnconfigure(0,weight=1)
+timeLookupView.rowconfigure(0,weight=1)
 
 # Create frame to hold Truck Information
-truckTopLF = tk.LabelFrame(master=root,
+truckTopLF = tk.LabelFrame(master=mainPage,
                            text="Trucks",
                            name="truckTopLF",
                            labelanchor="n",
@@ -208,28 +211,41 @@ truckTopLF = tk.LabelFrame(master=root,
 truckTopLF.grid(column=0,row=0,columnspan=5)
 
 # Delivery Updates text area
-scrollbar = tk.Scrollbar(master=root)
-updatesArea = tk.Text(master=root,name="updatesArea",wrap="word",bg="light green",height=18,yscrollcommand=scrollbar.set)
-updatesArea.grid(column=1,row=3,columnspan=3)
-scrollbar.grid(column=4,row=3,sticky="nsw")
+scrollbar = tk.Scrollbar(master=mainPage)
+updatesArea = tk.Text(master=mainPage,name="updatesArea",wrap="word",bg="light green",height=18,yscrollcommand=scrollbar.set)
+updatesArea.grid(column=0,row=3,columnspan=3)
+scrollbar.grid(column=3,row=3,sticky="nsw")
 scrollbar.config(command=updatesArea.yview)
 
+# Frame to contain time/distance info
+infoFrame = tk.Frame(master=mainPage,name="infoFrame")
+infoFrame.grid(column=0,row=2)
+
+# Interactive button to Start/Stop/Resume program
+controlBtn = tk.Button(master=infoFrame,
+                        name="controlBtn",
+                        text="Start",
+                        default="normal",
+                        width=10,
+                        relief=tk.RAISED)
+controlBtn.grid(column=0,row=0)
+
 # Time Widgets
-timeLF = tk.LabelFrame(master=root,name="timeLF",text="Program Time",background="light gray",relief=tk.RAISED)
-timeLF.grid(column=2,row=2)
+timeLF = tk.LabelFrame(master=infoFrame,name="timeLF",text="Program Time",background="light gray",relief=tk.RAISED)
+timeLF.grid(column=1,row=0)
 
 timeVal = tk.Label(master=timeLF,text="08:00 AM",name="timeVal",justify="center",background="light gray")
 timeVal.grid(column=0,row=0)
 
 # Total Distance Widgets
-totalDistLF = tk.LabelFrame(master=root,text="Total Distance",name="totalDistLF",background="light gray",relief=tk.RAISED)
-totalDistLF.grid(column=3,row=2)
+totalDistLF = tk.LabelFrame(master=infoFrame,text="Total Distance",name="totalDistLF",background="light gray",relief=tk.RAISED)
+totalDistLF.grid(column=2,row=0)
 
 totalDistVal = tk.Label(master=totalDistLF,text="0.0 Miles",name="totalDistVal",justify="center",background="light gray")
 totalDistVal.grid(column=0,row=0)
 
 # Time Selector Widget
-timeViewLF = tk.LabelFrame(master=root,text="View package statuses \nat a specific time",name="timeViewLF",background="light gray",relief=tk.RAISED,labelanchor="n")
+timeViewLF = tk.LabelFrame(master=timeLookupView,text="View package statuses \nat a specific time",name="timeViewLF",background="light gray",relief=tk.RAISED,labelanchor="n")
 timeViewLF.grid(column=4,row=2,pady=10)
 
 timeViewEntry = tk.Entry(master=timeViewLF,name="timeViewEntry",justify="center",relief=tk.SUNKEN)
@@ -253,11 +269,4 @@ timeViewInfoLabel = tk.Label(master=timeViewLF,
                              font=("italicized", 10),bg="light gray",fg="red")
 timeViewInfoLabel.grid(column=0,row=3)
 
-# Interactive button to Start/Stop/Resume program
-controlBtn = tk.Button(master=root,
-                        name="controlBtn",
-                        text="Start",
-                        default="normal",
-                        width=10,
-                        relief=tk.RAISED)
-controlBtn.grid(column=1,row=2)
+
