@@ -47,7 +47,11 @@ def logUIState(time, pkgWidget):
 
     # Check if time entry already exists, if so, update that package status in that entry
     if ezTime in uiLog.keys():
-        uiLog[ezTime][pWidgetName] = pWidgetText
+        if pWidgetName == "p9LookupStatusLabel":
+            uiLog[ezTime][pWidgetName]["Status"] = pWidgetText
+            uiLog[ezTime][pWidgetName]["Destination"] = "410 S State St", "Salt Lake City", "UT", "84111"
+        else:
+            uiLog[ezTime][pWidgetName] = pWidgetText
     else:
         # Copy previous state's dictionary
         prevState = list(uiLog.values())[-1] # turns .values() view-object into a list, then grab the last item
@@ -79,15 +83,21 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
 
     # GUI widgets to be updated throughout the program
     guiRoot = gui
-    truckWidget = guiRoot.nametowidget("truckTopLF").nametowidget(f"t{startTruck.getTruckID()}Label")
+    guiMainPage = guiRoot.nametowidget("rootNB").nametowidget("mainPage")
+    truckWidget = guiMainPage.nametowidget("truckTopLF").nametowidget(f"t{startTruck.getTruckID()}Label")
     truckStatusWidget = truckWidget.nametowidget(f"t{startTruck.getTruckID()}StatusLabel")
     truckMileageWidget = truckWidget.nametowidget(f"t{startTruck.getTruckID()}MileageLabel")
-    timeWidget = guiRoot.nametowidget("timeLF").nametowidget("timeVal")
-    timeSearchEntryWidget = guiRoot.nametowidget("timeViewLF").nametowidget("timeViewEntry")
-    timeSearchBtnWidget = guiRoot.nametowidget("timeViewLF").nametowidget("timeViewBtn")
-    timeSearchLabel = guiRoot.nametowidget("timeViewLF").nametowidget("timeViewInfoLabel")
-    totalDistWidget = guiRoot.nametowidget("totalDistLF").nametowidget("totalDistVal")
-    updatesWidget = guiRoot.nametowidget("updatesArea")
+    infoWidget = guiMainPage.nametowidget("infoFrame")
+    timeWidget = infoWidget.nametowidget("timeLF").nametowidget("timeVal")
+    totalDistWidget = infoWidget.nametowidget("totalDistLF").nametowidget("totalDistVal")
+    updatesWidget = guiMainPage.nametowidget("updatesArea")
+    
+    guiTimeViewPage = guiRoot.nametowidget("rootNB").nametowidget("timeLookupView")
+    pkgStatusLookupArea = guiTimeViewPage.nametowidget("pkgStatusLookupAreaLF")
+    timeSearchEntryWidget = guiTimeViewPage.nametowidget("timeViewLF").nametowidget("timeViewEntry")
+    timeSearchBtnWidget = guiTimeViewPage.nametowidget("timeViewLF").nametowidget("timeViewBtn")
+    timeSearchLabel = guiTimeViewPage.nametowidget("timeViewLF").nametowidget("timeViewInfoLabel")
+    
 
     # Global variable to log UI states
     global uiLog
@@ -95,16 +105,22 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
 
     # Enter uiLog's first state a.k.a default
     for truck in trucks:
-        tWidget = guiRoot.nametowidget("truckTopLF").nametowidget(f"t{truck.getTruckID()}Label")
         for package in truck.packages:
-            pkgStatusWidget = tWidget.nametowidget(f"p{package.getID()}StatusLabel")
-            pkgEntry = {pkgStatusWidget.winfo_name(): package.getStatus()}
-            uiLog["08:00 am"].update(pkgEntry)
+            pkgStatusWidget = pkgStatusLookupArea.nametowidget(f"p{package.getID()}LookupStatusLabel")
+            if package.getID() == 9:
+                pkgEntry = {pkgStatusWidget.winfo_name(): {"Status": package.getStatus(),
+                                                           "Destination": package.getAddress()
+                                                           }
+                }
+                uiLog["08:00 am"].update(pkgEntry)
+            else:
+                pkgEntry = {pkgStatusWidget.winfo_name(): package.getStatus()}
+                uiLog["08:00 am"].update(pkgEntry)
 
     while timer < 20000:
         # Check if program is paused
-        if guiRoot.nametowidget("controlBtn")["text"] == "Resume":
-            while guiRoot.nametowidget("controlBtn")["text"] == "Resume":
+        if infoWidget.nametowidget("controlBtn")["text"] == "Resume":
+            while infoWidget.nametowidget("controlBtn")["text"] == "Resume":
                 time.sleep(0.1)
         
         # Program speed
@@ -124,21 +140,26 @@ def deliverPackages(gui, trucks, startTruck: Truck, startTime):
                 if p.getStatus() == "Delayed":
                     p.updateStatus("On Truck")
                     # Update gui
-                    packageWidget = guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")
-                    packageWidget["text"] = "On Truck"
+                    mainPagePkgWidget = guiMainPage.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")
+                    mainPagePkgWidget["text"] = "On Truck"
                     # Log UI state
-                    logUIState(msgTime,packageWidget)
+                    loggedPkgWidget = pkgStatusLookupArea.nametowidget(f"p{p.getID()}LookupStatusLabel")
+                    loggedPkgWidget["text"] = "On Truck 3"
+                    logUIState(msgTime,loggedPkgWidget)
         
         # When 10:20am hits, update Package 9's address
         if currentTime.hour == 10 and currentTime.minute == 20:
             for p in trucks[2].packages:
                 if p.getID() == 9:
                     p.updateStatus("On Truck")
-                    packageWidget = guiRoot.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")
+                    # Update gui
+                    mainPagePkgWidget = guiMainPage.nametowidget("truckTopLF").nametowidget("t3Label").nametowidget(f"p{p.getID()}StatusLabel")
                     packageWidget["text"] = "On Truck"
-                    # Log UI state
-                    logUIState(msgTime,packageWidget)
                     p.updateAddress("410 S State St", "Salt Lake City", "UT", "84111")
+                    # Log UI state
+                    loggedPkgWidget = pkgStatusLookupArea.nametowidget(f"p{p.getID()}LookupStatusLabel")
+                    loggedPkgWidget["text"] = "On Truck 3"
+                    logUIState(msgTime,loggedPkgWidget)
                     updatesWidget.insert(tk.END,f"\n[{msgTime}]: Package 9 address corrected to: {p.getAddress()}")
                     updatesWidget.see(tk.END)
         

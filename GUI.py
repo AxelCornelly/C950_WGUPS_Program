@@ -153,7 +153,7 @@ def startGUI(truckList):
         packageStatusHeader = tk.Label(master=truckLF,text="Package Status",font=("bold"),anchor="center")
         packageStatusHeader.grid(column=2,row=2)
         
-        # Populate the Truck's container with its Packages and their info
+        # Populate the Truck's container and Time Lookup Page container with its Packages and their info
         for idx, p in enumerate(truck.packages):
             global pkgStatusLabelNames
             pkgStatusLabelNames = {}
@@ -163,6 +163,27 @@ def startGUI(truckList):
 
             packageStatusLabel = tk.Label(master=truckLF,name=f"p{p.getID()}StatusLabel",text=f"{p.getStatus()}")
             packageStatusLabel.grid(column=2,row=idx+4)
+
+            pkgLookupLabel = tk.Label(master=pkgStatusLookupArea,name=f"p{p.getID()}LookupLabel",text=f"[Package {p.getID()}]",background="light gray")
+            if p.getStatus() == "On Truck":
+                pkgLookupStatusLabel = tk.Label(master=pkgStatusLookupArea,name=f"p{p.getID()}LookupStatusLabel",text=f"{p.getStatus()} {truck.getTruckID()}",background="light gray")
+            else:
+                pkgLookupStatusLabel = tk.Label(master=pkgStatusLookupArea,name=f"p{p.getID()}LookupStatusLabel",text=f"{p.getStatus()}",background="light gray")
+
+            pkgLookupDestinationLabel = tk.Label(master=pkgStatusLookupArea,name=f"p{p.getID()}LookupDestinationLabel",text=f"{p.getAddress()}",background="light gray")
+            pkgLookupDeadlineLabel = tk.Label(master=pkgStatusLookupArea,name=f"p{p.getID()}LookupDeadlineLabel",text=f"{p.getDeadline()}",background="light gray")
+
+            # Logic to organize labels in order, and into 4 columns
+            if 0 < p.getID() <= 20:
+                pkgLookupLabel.grid(column=0,row=p.getID()+1)
+                pkgLookupStatusLabel.grid(column=2,row=p.getID()+1)
+                pkgLookupDestinationLabel.grid(column=4,row=p.getID()+1)
+                pkgLookupDeadlineLabel.grid(column=6,row=p.getID()+1)
+            elif 21 <= p.getID() <= 40:
+                pkgLookupLabel.grid(column=8,row=p.getID()-19)
+                pkgLookupStatusLabel.grid(column=10,row=p.getID()-19)
+                pkgLookupDestinationLabel.grid(column=12,row=p.getID()-19)
+                pkgLookupDeadlineLabel.grid(column=14,row=p.getID()-19)
             
             pkgStatusLabelNames.update({packageStatusLabel.winfo_name(): packageStatusLabel})
             
@@ -179,16 +200,17 @@ def startGUI(truckList):
     
     root.mainloop()
 
-# Root
+# === Root === #
 root = tk.Tk()
 root.title("WGUPS Delivery Program")
 root.geometry("1014x900")
 root.configure(bg="dark gray")
 root.columnconfigure(0,weight=1)
 root.rowconfigure(0,weight=1)
+# ============= #
 
-# Notebook widget to hold different views
-rootNB = ttk.Notebook(master=root)
+# === Notebook widget to hold different views === #
+rootNB = ttk.Notebook(master=root,name="rootNB")
 mainPage = tk.Frame(master=rootNB,name="mainPage")
 timeLookupView = tk.Frame(master=rootNB,name="timeLookupView")
 rootNB.add(mainPage,text="Home")
@@ -198,6 +220,9 @@ mainPage.columnconfigure(0,weight=1)
 mainPage.rowconfigure(0,weight=1)
 timeLookupView.columnconfigure(0,weight=1)
 timeLookupView.rowconfigure(0,weight=1)
+# ============================================== #
+
+# ==== Main Page Widgets ==== #
 
 # Create frame to hold Truck Information
 truckTopLF = tk.LabelFrame(master=mainPage,
@@ -244,18 +269,61 @@ totalDistLF.grid(column=2,row=0)
 totalDistVal = tk.Label(master=totalDistLF,text="0.0 Miles",name="totalDistVal",justify="center",background="light gray")
 totalDistVal.grid(column=0,row=0)
 
-# Time Selector Widget
-timeViewLF = tk.LabelFrame(master=timeLookupView,text="View package statuses \nat a specific time",name="timeViewLF",background="light gray",relief=tk.RAISED,labelanchor="n")
-timeViewLF.grid(column=4,row=2,pady=10)
+# ==== Time Lookup Page Widgets ==== #
 
-timeViewEntry = tk.Entry(master=timeViewLF,name="timeViewEntry",justify="center",relief=tk.SUNKEN)
+# Label Frame to contain Package Statuses and widgets
+pkgStatusLookupArea = tk.LabelFrame(master=timeLookupView,
+                                    text="Package Statuses",
+                                    name="pkgStatusLookupAreaLF",
+                                    background="light gray",
+                                    font=("Bold",24),
+                                    relief=tk.RAISED,
+                                    labelanchor="n")
+pkgStatusLookupArea.grid(column=0,row=0,pady=10,columnspan=5)
+
+# Table organization Widgets
+
+lookupAreaPkgHeader1 = tk.Label(master=pkgStatusLookupArea,text="Package",font=("Bold", 14),justify="center",background="light gray",padx=5)
+lookupAreaPkgHeader1.grid(column=0,row=0,sticky="nsew")
+lookupAreaPkgHeader2 = tk.Label(master=pkgStatusLookupArea,text="Package",font=("Bold", 14),justify="center",background="light gray",padx=5)
+lookupAreaPkgHeader2.grid(column=8,row=0,sticky="nsew")
+
+lookupAreaStatusHeader1 = tk.Label(master=pkgStatusLookupArea,text="Status",font=("Bold", 14),justify="center",background="light gray",padx=5)
+lookupAreaStatusHeader1.grid(column=2,row=0)
+lookupAreaStatusHeader2 = tk.Label(master=pkgStatusLookupArea,text="Status",font=("Bold", 14),justify="center",background="light gray",padx=5)
+lookupAreaStatusHeader2.grid(column=10,row=0)
+
+lookupAreaDestinationHeader1 = tk.Label(master=pkgStatusLookupArea,text="Destination",font=("Bold", 14),justify="center",background="light gray",padx=5)
+lookupAreaDestinationHeader1.grid(column=4,row=0)
+lookupAreaDestinationHeader2 = tk.Label(master=pkgStatusLookupArea,text="Destination",font=("Bold", 14),justify="center",background="light gray",padx=5)
+lookupAreaDestinationHeader2.grid(column=12,row=0)
+
+lookupAreaDeadlineHeader1 = tk.Label(master=pkgStatusLookupArea,text="Deadline",font=("Bold", 14),justify="center",background="light gray",padx=5)
+lookupAreaDeadlineHeader1.grid(column=6,row=0)
+lookupAreaDeadlineHeader2 = tk.Label(master=pkgStatusLookupArea,text="Deadline",font=("Bold", 14),justify="center",background="light gray",padx=5)
+lookupAreaDeadlineHeader2.grid(column=14,row=0)
+
+lookupAreaHorSep = ttk.Separator(master=pkgStatusLookupArea,orient="horizontal")
+lookupAreaHorSep.grid(column=0,row=1,sticky="ew",columnspan=17)
+
+for i in range(15):
+    if i % 2 != 0:
+        lookupAreaVertSep = ttk.Separator(master=pkgStatusLookupArea,orient="vertical")
+        lookupAreaVertSep.grid(column=i,row=0,sticky="ns",rowspan=22)
+
+
+# Time Selector Widget
+timeViewLF = tk.LabelFrame(master=timeLookupView,text="View package statuses at a specific time",name="timeViewLF",font=("Bold",14),background="light gray",relief=tk.RAISED,labelanchor="n")
+timeViewLF.grid(column=0,row=1,pady=10,sticky="n")
+
+timeViewEntry = tk.Entry(master=timeViewLF,name="timeViewEntry",justify="center",relief=tk.SUNKEN,width=25)
 timeViewEntry.bind("<FocusIn>",clearEntry) # Clears entry contents upon gaining focus
 timeViewEntry.bind("<Return>",handleEnterKey)
-timeViewEntry.grid(column=0,row=0,sticky="ew",padx=3)
+timeViewEntry.grid(column=0,row=0,sticky="nsew",padx=100,pady=10)
 
 # Button widget to submit time entry
 timeViewBtn = tk.Button(master=timeViewLF,name="timeViewBtn",text="View Packages",relief=tk.RAISED,command=lambda: checkPackageStatus())
-timeViewBtn.grid(column=0,row=1,sticky="ew",padx=3,pady=3)
+timeViewBtn.grid(column=0,row=1,sticky="ew",padx=60,pady=3)
 
 # Button widget to reset time search
 resetStatusViewBtn = tk.Button(master=timeViewLF,name="resetStatusViewBtn",text="Restore\nStatuses",relief=tk.RAISED,command=lambda: resetStatusView())
