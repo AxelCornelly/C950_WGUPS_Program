@@ -55,28 +55,54 @@ def checkPackageStatus():
     # change focus to button widget
     timeViewBtn.focus()
 
-    timeToSearch = timeViewEntry.get().casefold() # User inputted time
-    uiState = getUIState(timeToSearch) # Key and dictionary of logged time (or closest entry)
+    timeToSearch = timeViewEntry.get().casefold().lstrip("0") # User inputted time, dropping any leading 0's
+    log = getUIState(timeToSearch)
+    uiState = log[0] # Dictionary of logged time (or closest entry)
+    timeOfState = log[1]
+    
+    # If the returned log has a time less than the input, notify user
+    # First turn both string values into time objects
+    timeInput = datetime.datetime.strptime(timeToSearch,"%I:%M %p").time()
+    tosTime = datetime.datetime.strptime(timeOfState,"%I:%M %p").time()
+    if timeInput > tosTime:
+        timeViewInfoLabel.config(text="Searched time either out of program range or does not have an entry. \nShowing closest previous entry.")
+        timeViewInfoLabel.grid(column=0,row=3)
+    else:
+        timeViewInfoLabel.grid_forget()
     
     # Update UI
-    truckTopLF.config(text=f"Viewing Package Statuses From {timeToSearch}",background="light yellow")
-    truckWidgets = truckTopLF.winfo_children()
-    for truckW in truckWidgets:
-        for childW in truckW.winfo_children():
-            if childW.winfo_name() in uiState.keys():
+    pkgStatusLookupArea.config(text=f"Package Statuses From {timeOfState}")
+    for childW in pkgStatusLookupArea.winfo_children():
+        # Update package 9's destination label
+        if childW.winfo_name() == "p9LookupDestinationLabel":
+            childW.configure(text=f"{uiState["p9LookupStatusLabel"]["Destination"]}") # type: ignore
+        
+        if childW.winfo_name() in uiState.keys():
+            # Special Case: Package 9 with a different type of entry in the dictionary
+            if childW.winfo_name() == "p9LookupStatusLabel":
+                childW.configure(text=f"{uiState[childW.winfo_name()]["Status"]}") # type: ignore
+            else:
                 childW.configure(text=f"{uiState[childW.winfo_name()]}") # type: ignore
+    
     # Show and enable reset button
     resetStatusViewBtn.grid(column=0,row=2,sticky="ew",padx=3,pady=3)
 
 def resetStatusView():
-    currentState = getUIState(timeVal["text"].casefold()) # get current program time's most recent UI log
+    log = getUIState(timeVal["text"].casefold())
+    currentState = log[0] # get current program time's most recent UI log
 
     # Restore UI
-    truckTopLF.config(text="Trucks",background="light gray")
-    truckWidgets = truckTopLF.winfo_children()
-    for truckW in truckWidgets:
-        for childW in truckW.winfo_children():
-            if childW.winfo_name() in currentState.keys():
+    pkgStatusLookupArea.config(text=f"Package Statuses")
+    for childW in pkgStatusLookupArea.winfo_children():
+        # Update package 9's destination label
+        if childW.winfo_name() == "p9LookupDestinationLabel":
+            childW.configure(text=f"{currentState["p9LookupStatusLabel"]["Destination"]}") # type: ignore
+        
+        if childW.winfo_name() in currentState.keys():
+            # Special Case: Package 9 with a different type of entry in the dictionary
+            if childW.winfo_name() == "p9LookupStatusLabel":
+                childW.configure(text=f"{currentState[childW.winfo_name()]["Status"]}") # type: ignore
+            else:
                 childW.configure(text=f"{currentState[childW.winfo_name()]}") # type: ignore
 
     resetStatusViewBtn.grid_forget() 
@@ -94,7 +120,7 @@ def handleTimeViewBtn():
     # Validate user input by attempting to format the entry as a datetime
     try:
         # This block will execute if the input is a valid time value
-        validTimeInput = datetime.datetime.strptime(timeInput,"%H:%M %p")
+        validTimeInput = datetime.datetime.strptime(timeInput,"%I:%M %p")
         # Create highlight tag which will be applied to all occurences
         updatesArea.tag_config("highlight",background="yellow", foreground="black")
         
@@ -155,8 +181,8 @@ def startGUI(truckList):
         
         # Populate the Truck's container and Time Lookup Page container with its Packages and their info
         for idx, p in enumerate(truck.packages):
-            global pkgStatusLabelNames
-            pkgStatusLabelNames = {}
+            global pkgLookupStatusLabelNames
+            pkgLookupStatusLabelNames = {}
             
             packageLabel = tk.Label(master=truckLF,name=f"p{p.getID()}Label",text=f"Package {p.getID()}")
             packageLabel.grid(column=0,row=idx+4)
@@ -185,12 +211,18 @@ def startGUI(truckList):
                 pkgLookupDestinationLabel.grid(column=12,row=p.getID()-19)
                 pkgLookupDeadlineLabel.grid(column=14,row=p.getID()-19)
             
-            pkgStatusLabelNames.update({packageStatusLabel.winfo_name(): packageStatusLabel})
+            if p.getID() == 9:
+                pkgLookupStatusLabelNames.update({pkgLookupStatusLabel.winfo_name(): {"StatusLabel": pkgLookupStatusLabel,
+                                                                                      "DestinationLabel": pkgLookupDestinationLabel
+                                                                                      }
+                                                })
+            else:
+                pkgLookupStatusLabelNames.update({pkgLookupStatusLabel.winfo_name(): pkgLookupStatusLabel})
             
     
     # Threads to start deliveries
-    thread1 = threading.Thread(target=deliverPackages,args=(root,truckList,truckList[0],"08:00 AM"))
-    thread2 = threading.Thread(target=deliverPackages,args=(root,truckList,truckList[1],"08:00 AM"))
+    thread1 = threading.Thread(target=deliverPackages,args=(root,truckList,truckList[0],"8:00 AM"))
+    thread2 = threading.Thread(target=deliverPackages,args=(root,truckList,truckList[1],"8:00 AM"))
 
     # Update Button command
     controlBtn.config(command=lambda: control(controlBtn,thread1,thread2))
@@ -259,15 +291,15 @@ controlBtn.grid(column=0,row=0)
 timeLF = tk.LabelFrame(master=infoFrame,name="timeLF",text="Program Time",background="light gray",relief=tk.RAISED)
 timeLF.grid(column=1,row=0)
 
-timeVal = tk.Label(master=timeLF,text="08:00 AM",name="timeVal",justify="center",background="light gray")
-timeVal.grid(column=0,row=0)
+timeVal = tk.Label(master=timeLF,text="8:00 AM",name="timeVal",justify="center",background="light gray")
+timeVal.grid(column=0,row=0,sticky="nsew")
 
 # Total Distance Widgets
 totalDistLF = tk.LabelFrame(master=infoFrame,text="Total Distance",name="totalDistLF",background="light gray",relief=tk.RAISED)
 totalDistLF.grid(column=2,row=0)
 
 totalDistVal = tk.Label(master=totalDistLF,text="0.0 Miles",name="totalDistVal",justify="center",background="light gray")
-totalDistVal.grid(column=0,row=0)
+totalDistVal.grid(column=0,row=0,sticky="nsew")
 
 # ==== Time Lookup Page Widgets ==== #
 
