@@ -2,8 +2,7 @@
 <h2>By: Axel Cornelly | Student ID: 002555231</h2>
 <p>
 	This repository is dedicated to the WGU Computer Science Degree's Data Structures and Algorithms II course and its Performance Assessment, specifically Task 2.
-	Please feel free to use my implementation strictly for inspiration, as doing your own work to avoid plagiarism is always advised and adheres to the school's academic
-	integrity policy.
+	<b>To adhere to the school's academic integrity policies, <mark>please use my solution as inspiration only!</b></mark>
 </p>
 <h3>About the Program</h3>
 <p>
